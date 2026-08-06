@@ -1,0 +1,47 @@
+name: Deploy GitBook to ECS
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install honkit
+        run: npm install -g honkit
+
+      - name: Build GitBook
+        run: honkit build
+
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ECS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ vars.ECS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: Deploy to ECS
+        env:
+          BOOK_NAME: ${{ github.event.repository.name }}
+        run: |
+          tar czf _book.tar.gz -C _book .
+          scp -i ~/.ssh/deploy_key _book.tar.gz ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }}:/tmp/_book.tar.gz
+          ssh -i ~/.ssh/deploy_key ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }} \
+            "mkdir -p /var/www/books/${BOOK_NAME} && \
+             cd /var/www/books/${BOOK_NAME} && rm -rf * && \
+             tar xzf /tmp/_book.tar.gz && rm -f /tmp/_book.tar.gz"
+
+      - name: Cleanup
+        if: always()
+        run: rm -f ~/.ssh/deploy_key
