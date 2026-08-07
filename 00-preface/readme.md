@@ -9,7 +9,7 @@ Kree4JS，是Kree4X的Javascript语言版本实现。
 实际，其内部包含两个变体：
 
 - Kree4N = Kree4NodeJS
-- Kree4B = Kree4Brower
+- Kree4B = Kree4Browser
 
 ### Kree4X是什么？
 
@@ -27,7 +27,7 @@ Kree4JS，是Kree4X的Javascript语言版本实现。
 - 简单、对服务实现无侵入。纯函数、普通Class、普通Object即是服务，无任何继承、注入、注解。
 - No Schema，不要求在服务层定义Schema
 - 服务与通信分离，底层通信协议是http、tcp、udp……，服务是不感知，也不关心的
-- 异构通信网格，支持将不同通信协议(http、tcp、udp……)如何为一个同一的网格，跨异构节点通信
+- 异构通信网格，支持将不同通信协议(http、tcp、udp……)融合为一个统一的通信网格，跨异构节点通信
 - 服务动态性，“**概念想定**”、“**我思故我在**”方式进行RPC服务调用
 - 去中心化的动态服务发现，不依赖于任何服务注册表机制，实现服务动态发现
 - Tracing是第一等公民，基于Action，以服务调用为粒度，动态、自动进行全栈跨节点调用栈、通信站追踪

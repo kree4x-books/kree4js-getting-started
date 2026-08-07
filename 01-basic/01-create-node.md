@@ -59,7 +59,7 @@ const node2 = Kree4n.create("node-2", "A demo node");
 // HttpListenConnectionProvider
 // HttpAttachConnectionProvider
 // TcpListenConnectionProvider
-// TcpListenConnectionProvider
+// TcpAttachConnectionProvider
 // UdpListenConnectionProvider
 // UdpAttachConnectionProvider
 // SocketioListenConnectionProvider
