@@ -34,6 +34,7 @@
   - [异构组网：多通信协议融合，组建通信网格](02-advance/09-heterogeneous-grid.md)
   - [动态链路：开启通信协商，支持动态链路直连与断线重连](02-advance/10-dynamic-negotiation.md)
   - [传输策略：使用TransportPolicy为服务调用通信协议与信道](02-advance/11-transport-policy.md)
+  - [服务调用重试：使用retry设置调用重试策略](02-advance/12-retry-policy.md)
 - 高级篇
   - [开发插件：使用插件扩充Kree4X](03-custom/01-plugin-development.md)
   - [扩展通信协议：支持新的通信协议](03-custom/02-custom-protocol.md)

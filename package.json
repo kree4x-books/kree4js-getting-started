@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node examples/01-basic/01-create-node.mjs",
     "lint": "eslint . --ext .mjs",
-    "format": "prettier --write \"examples/**/*.mjs\""
+    "format": "eslint . --ext .mjs --fix"
   },
   "author": "RV, rodney.vin@gmail.com",
   "license": "CC-BY-NC-ND-4.0",
@@ -18,12 +18,12 @@
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
     "eslint": "^9.39.5",
-    "eslint-config-prettier": "^9.1.0",
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-n": "^18.2.2",
     "globals": "^15.0.0",
-    "prettier": "^3.6.2",
-    "prettier-config-standard": "^7.0.0",
     "standard": "^17.1.2"
+  },
+  "overrides": {
+    "eslint-plugin-n": "^18.2.2"
   }
 }

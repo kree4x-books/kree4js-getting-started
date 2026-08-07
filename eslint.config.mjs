@@ -1,7 +1,6 @@
 // 3rd
 import globals from 'globals'
 import { FlatCompat } from '@eslint/eslintrc'
-import prettier from 'eslint-config-prettier'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -28,10 +27,7 @@ export default [
     ]
   },
   ...compat.extends('standard'),
-  // Disable all formatting rules that conflict with Prettier; Prettier is the
-  // single source of truth for code style, ESLint only checks logic/quality.
-  prettier,
-  {    // Placed AFTER the standard config so these win.
+  { // Placed AFTER the standard config so these win.
     // - ecmaVersion 2025 lets espree 10 (bundled with eslint 9) parse
     //   `with { type: 'json' }` import attributes.
     // - node globals mirror the legacy `.eslintrc.js` `env: { node: true }`

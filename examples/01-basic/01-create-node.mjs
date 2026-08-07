@@ -11,7 +11,7 @@ const logger = Logging.getLogger('create-node')
  *
  * create() 自动注册了 BinaryProtocol + 所有网络传输协议。
  */
-async function main() {
+async function main () {
   // 方式 1：仅指定 name
   const node1 = Kree4n.create('node-1')
 
