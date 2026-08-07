@@ -11,11 +11,10 @@ const logger = Logging.getLogger('register-invoke-service')
  * 注册不同类型的服务实现，并通过 TCP 让另一个节点调用。
  *
  * 演示内容：
- * - 四种注册方式（callee 上）：
+ * - 三种注册方式（callee 上）：
  *   - 对象式服务：register(name, impl)
  *   - 类实例式服务：register(name, instance)（复用一个实例）
- *   - 类静态服务：registerClass(name, Cls)（每次调用新建实例）
- *   - 带元信息的服务：register(name, impl, option)
+ *   - 类构造子注册为服务：registerClass(name, Cls)（每次调用新建实例）
  * - caller 通过 TCP 连接到 callee，调用其开放的服务。
  */
 async function main () {

@@ -93,7 +93,7 @@ const result = await calc.add(10, 20)
 
 ### 三. 须强调的细节
 
-**四种注册方式**
+**三种注册方式**
 
 ```javascript
 // 1. 普通对象式服务
