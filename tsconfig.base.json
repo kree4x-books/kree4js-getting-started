@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "module": "nodenext",
+    "target": "es2023",
+    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "noImplicitAny": true,
+    "skipLibCheck": true,
+    "preserveSymlinks": false
+  }
+}
