@@ -4,6 +4,7 @@
 
 - [前言](00-preface/readme.md)
 - 基础篇
+  - [开始前的准备](01-basic/00-starting.md)
   - [创建Kree4X节点](01-basic/01-create-node.md)
   - [连接两个节点](01-basic/02-connect-two-nodes.md)
   - [注册并调用服务](01-basic/03-register-invoke-service.md)
