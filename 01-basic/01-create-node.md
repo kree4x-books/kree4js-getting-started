@@ -2,11 +2,13 @@
 
 > Created By [RV](mailto:rodney.vin@gmail.com), and licensed with Creative Commons "[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)"
 
+**目的与场景**
+
 在这一章，讲解如何使用Kree4N，创建Kree4X服务节点。
 
-注意，“Kree4X服务节点”，而不是Kree4JS、Kree4N，或者Kree4B。
+注意，“**Kree4X**服务节点”，而不是Kree4JS、Kree4N，或者Kree4B。
 
-因为，服务节点是For X的，它可以被跨语言连接和调用。
+因为，服务节点是**For X**的，它可以被跨语言连接和调用。
 
 ### 一. 概念
 
