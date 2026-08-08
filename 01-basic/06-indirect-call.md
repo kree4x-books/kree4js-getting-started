@@ -33,9 +33,7 @@ Kree4X内置了消息转发机制，只需在Hub节点开启`proxyMode`，即可
 import Kree4n from '@kree4js/kree4n'
 
 // Hub节点：开启转发模式，监听端口
-const hub = Kree4n.create('hub', undefined, {
-  transport: { proxyMode: true }
-})
+const hub = const hub = Kree4n.create('hub', 'CentralHub', { transport: { proxyMode: true } })
 hub.listen('tcp://127.0.0.1:8010')
 
 // Leaf1：注册服务，连接到Hub
@@ -81,7 +79,7 @@ const result = await greet.hello('World')
 
 开启后，Hub会自动将收到的消息转发给目标节点。
 
-数据转发，术语”数据帧中继“，默认是关闭的。原因，”默认配置即风险“。
+数据转发，术语”**数据帧中继**“，默认是关闭的。原因，”**默认配置即风险**“。
 
 默认配置，是一个巨大的惯性陷阱。如果，默认启用帧中继的话，绝大部分用户，一定会无意间将内部的服务节点暴露于外部用户之前，从而导致非预期的行为。
 
@@ -113,4 +111,4 @@ Kree4n.create(name: string, description?: string, options?: { transport?: { prox
 
 完整示例代码，参见：[06-indirect-call.mjs](../examples/01-basic/06-indirect-call.mjs)
 
-<a href="javascript:void(0)" onclick="window.open('../examples/run.html?file=01-basic/06-indirect-call.mjs')">▶ 在线运行</a>
+[▶ 在线运行](https://codesandbox.io/p/github/kree4x-books/kree4js-getting-started?file=examples/01-basic/06-indirect-call.mjs)
