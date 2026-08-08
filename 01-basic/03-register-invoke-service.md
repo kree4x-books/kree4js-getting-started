@@ -131,6 +131,56 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 
 这些概念及如何使用，我们在中级进阶篇再详谈。
 
-### 四. 可运行代码
+### 四. 涉及到的API
+
+**注册服务 register()**
+
+将一个服务实现注册到Kree4X节点。
+
+```typescript
+/**
+ * Registers a service implementation.
+ *
+ * @param {string} serviceName - The name of the service.
+ * @param {object|(new (...args:any[])=>Service)} serviceImpl - The service implementation object or class.
+ * @param {{[key:string]:any}} [serviceOption] - The service configuration options.
+ * @returns {Service} The created service instance.
+ */
+register(serviceName: string, serviceImpl: object | (new (...args: any[]) => Service), serviceOption?: {[key: string]: any}): Service
+```
+
+**注册类服务 registerClass()**
+
+将一个类构造函数注册为服务，每次调用新建实例。
+
+```typescript
+/**
+ * Registers a class-based service implementation.
+ *
+ * @param {string} serviceName - The name of the service.
+ * @param {(new (...args:any[])=>Service)} serviceImpl - The service class constructor.
+ * @param {{[key:string]:any}} [serviceOption] - The service configuration options.
+ * @returns {Service} The created service instance.
+ */
+registerClass(serviceName: string, serviceImpl: new (...args: any[]) => Service, serviceOption?: {[key: string]: any}): Service
+```
+
+**获取服务存根 service()**
+
+获取一个服务的透明代理（ServiceCluster），用于发起远程调用。
+
+```typescript
+/**
+ * Gets or creates a caller service cluster.
+ *
+ * @param {string} name - The qualified name of the service.
+ * @param {ServiceClusterOptions} [options] - The service cluster options.
+ * @param {boolean} [forceNew=false] - Force to create new ServiceCluster.
+ * @returns {ServiceCluster} The service cluster instance.
+ */
+service(name: string, options?: ServiceClusterOptions, forceNew?: boolean): ServiceCluster
+```
+
+### 五. 可运行代码
 
 完整示例代码，参见：[03-register-invoke-service.mjs](../examples/01-basic/03-register-invoke-service.mjs)

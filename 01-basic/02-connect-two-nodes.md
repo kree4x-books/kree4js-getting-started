@@ -77,7 +77,7 @@ await nodeA.whenReady(nodeB, 5_000)// 5s超时
 
 启动顺序，不重要。
 
-一个节点启动后，会按照设定的NetPoint信息，不断执行带退避测试的连接重试。
+一个节点启动后，会按照设定的NetPoint信息，不断执行带退避策略的连接重试。
 
 不过，Listen节点先启动，Attach节点后启动，可以避免无谓的重试耗时。
 
@@ -117,6 +117,65 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 - 假定服务存在，直接调用就好
 - 此次失败，下次也许就好了。
 
-### 四. 可运行代码
+### **四. 涉及到的API**
+
+**listen一个URL**
+
+向Kree4X节点加入一个Listen模式的网点NetPoint。
+
+如果节点已经启动，则会立即开始listen，试图打开连接。
+
+```typescript
+/**
+  * Listens for incoming connections.
+  *
+  * @param {string} url - The URL to listen on.
+  * @param {ConnectionOptions} [options] - The connection options.
+  * @returns {this} The current instance for chaining.
+  */
+listen(url: string, options?: ConnectionOptions): this;
+```
+
+**Attach一个URL**
+
+向Kree4X节点加入一个Attach模式的网点NetPoint。
+
+如果节点已经启动，则会立即开始Attach，试图打开连接。
+
+```typescript
+/**
+ * Attaches to a remote node.
+ *
+ * @param {string} url - The URL to attach to.
+ * @param {ConnectionOptions} [options] - The connection options.
+ * @returns {this} The current instance for chaining.
+ */
+attach(url: string, options?: ConnectionOptions): this;
+```
+
+**启动一个节点**
+
+```typescript
+/**
+ * Starts the KreeX instance.
+ *
+ * @param {number} [timeout=30000] - The startup timeout in milliseconds.
+ * @returns {Promise<void>} A promise that resolves when started.
+ */
+start(timeout?: number): Promise<void>;
+```
+
+**停止一个节点**
+
+```typescript
+/**
+ * Stops the KreeX instance.
+ *
+ * @returns {Promise<void>} A promise that resolves when stopped.
+ */
+stop(): Promise<void>;
+```
+
+### 五. 可运行代码
 
 完整示例代码，参见：[02-connect-two-nodes.mjs](../examples/01-basic/02-connect-two-nodes.mjs)

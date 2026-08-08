@@ -68,9 +68,10 @@ async function main () {
     logger.info(`[node-b] 调用 [node-a].greeter.hello('Kree4JS') = ${helloResult}`)
   } finally {
     // 依次停止，ExecUtils.quiet 吞掉单个 stop 异常，避免一个失败阻塞另一个退出
-    await ExecUtils.quiet(() => caller && caller.stop(), logger)
     await ExecUtils.quiet(() => callee.stop(), logger)
-    logger.info('[node-a, node-b] 两个节点已停止')
+    logger.info(`${callee}，已停止`)
+    await ExecUtils.quiet(() => caller.stop(), logger)
+    logger.info(`${caller}，已停止`)
   }
 }
 

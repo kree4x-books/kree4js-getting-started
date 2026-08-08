@@ -70,10 +70,61 @@ const node2 = Kree4n.create("node-2", "A demo node");
 
 ### 三. 须强调的细节
 
-无。
+**Kree4N**
 
-足够简单，无需多言。
+“@kree4js/kree4n”，是For NodeJS实现。
 
-### 四. 可运行代码
+默认內建了大量的各种通信协议、Tracing Formatter、Writer等只能在NodeJS端运行的插件。
+
+服务器，使用这个版本。
+
+**Kree4B**
+
+“@kree4js/kree4b”，是For Browser实现
+
+內建了在浏览器中建立XHR、WebSocket、Fetch等连接的插件。
+
+Web客户端，使用这个版本。
+
+**Kree4JS**
+
+"@kree4js/@kree4js"，是面向Javascript的通用版本，不包含任何平台特异的代码。
+
+所以，这是个纯粹的、极简版“框架”。
+
+唯一的好处：精简，没有多余的东西。基于这个极简版，您可以按需注入插件。
+
+例如，只注入TcpListenConnectionProvider，仅在服务器端使用。
+
+### 四. 涉及到的API
+
+**创建Kree4N实例Kree4n.create()**
+
+创建一个Kree4X实例，并注入Kree4N插件
+
+```typescript
+/* 
+ * @param {string} name - The name of the KreeX node.
+ * @param {string} description - A human-readable description.
+ * @param {{
+ *   worker?: { workerCount?: number, threshold?: number },
+ *   transport?: TransportOptions;
+ *   [key:string]: any
+ * }} [options] - Additional options.
+ * @returns {import('@kree4js/kree4js').KreeX}
+ */
+function create(name: string, description: string, options?: {
+    worker?: {
+        workerCount?: number;
+        threshold?: number;
+    };
+    transport?: TransportOptions;
+    [key: string]: any;
+}): import("@kree4js/kree4js").KreeX
+```
+
+
+
+### 五. 可运行代码
 
 完整示例代码，参见：[01-create-node.mjs](../examples/01-basic/01-create-node.mjs)
