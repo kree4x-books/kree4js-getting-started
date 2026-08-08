@@ -113,4 +113,4 @@ Kree4n.create(name: string, description?: string, options?: { transport?: { prox
 
 完整示例代码，参见：[06-indirect-call.mjs](../examples/01-basic/06-indirect-call.mjs)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/kree4x-books/kree4js-getting-started/tree/main/examples/01-basic/06-indirect-call.mjs)
+[▶ 在线运行](../examples/run.html?file=01-basic/06-indirect-call.mjs)
