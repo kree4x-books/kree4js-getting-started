@@ -72,11 +72,7 @@
         const fileContent = await fileRes.text()
         const pkgContent = JSON.stringify({
           name: 'kree4js-example',
-          type: 'module',
-          dependencies: {
-            '@kree4js/commons-logging': '^1.0.0',
-            '@kree4js/kree4n': '^1.0.0'
-          }
+          type: 'module'
         }, null, 2)
 
         const fileName = file.split('/').pop()
