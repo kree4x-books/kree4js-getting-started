@@ -83,7 +83,7 @@ const result = await greet.hello('World')
 
 默认配置，是一个巨大的惯性陷阱。如果，默认启用帧中继的话，绝大部分用户，一定会无意间将内部的服务节点暴露于外部用户之前，从而导致非预期的行为。
 
-详情，参考：[https://zhuanlan.zhihu.com/p/2036008614192735404](https://zhuanlan.zhihu.com/p/2036008614192735404)
+详情，参考：[数据帧中继：DataFrame Forwarding](https://zhuanlan.zhihu.com/p/2036008614192735404)
 
 **转发策略（ForwardPolicy）**
 
@@ -111,4 +111,4 @@ Kree4n.create(name: string, description?: string, options?: { transport?: { prox
 
 完整示例代码，参见：[06-indirect-call.mjs](../examples/01-basic/06-indirect-call.mjs)
 
-[▶ 在线运行](https://codesandbox.io/p/github/kree4x-books/kree4js-getting-started?file=examples/01-basic/06-indirect-call.mjs)
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kree4x-books/kree4js-getting-started)

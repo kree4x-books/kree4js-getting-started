@@ -1,0 +1,7 @@
+tasks:
+  - name: Kree4JS Examples
+    init: |
+      npm install
+      echo ""
+      echo "✅ 依赖已安装，运行示例："
+      echo "   cd examples/01-basic && node 05-peer-register-invoke.mjs"
