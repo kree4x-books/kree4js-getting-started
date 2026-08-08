@@ -111,4 +111,4 @@ service(name: string): ServiceCluster
 
 完整示例代码，参见：[05-peer-register-invoke.mjs](../examples/01-basic/05-peer-register-invoke.mjs)
 
-[▶ 在线运行](https://stackblitz.com/github/kree4x-books/kree4js-getting-started/tree/main/examples/01-basic/05-peer-register-invoke.mjs)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/kree4x-books/kree4js-getting-started/tree/main/examples/01-basic/05-peer-register-invoke.mjs)
