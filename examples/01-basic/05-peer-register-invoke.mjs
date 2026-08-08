@@ -10,58 +10,49 @@ const logger = Logging.getLogger('peer-register-invoke')
 /**
  * 对等节点 RPC 通信（Peer-to-Peer）。
  *
- * 两个对等节点通过 TCP 互联，node-a 暴露计算服务，node-b 连过去调用。
+ * 两个对等节点通过 TCP 互联，各自注册 identifier 服务，互相调用。
  * kreex 没有严格的 client/server 概念 —— 两个节点对称对等，
  * listen/attach 只是连接建立的方向不同，连接后任意一方都可以注册和调用服务。
- * service() 返回的 CallerServiceCluster 已被代理包装（Delegate），
- * 可以直接调用业务方法名，无需 invoke()。
  */
 async function main () {
-  // ── Node A：监听端口，注册服务 ───────────────────
+  // ── Node A：注册 identifier 服务，监听端口 ──────────
   const nodeA = Kree4n.create('node-a')
-  nodeA.register('math', {
-    add (a, b) {
-      return a + b
-    },
-    multiply (a, b) {
-      return a * b
+  nodeA.register('identifier', {
+    whoAreYou () {
+      return { name: nodeA.name, id: nodeA.id }
     }
   })
-  nodeA.listen('tcp://127.0.0.1:8000') // Listen TCP
+  nodeA.listen('tcp://127.0.0.1:8000')
 
-  // ── Node B：连接 Node A，调用其服务 ──────────────
+  // ── Node B：注册 identifier 服务，连接 Node A ──────
   const nodeB = Kree4n.create('node-b')
-  nodeB.attach('tcp://127.0.0.1:8000') // Attach TCP
+  nodeB.register('identifier', {
+    whoAreYou () {
+      return { name: nodeB.name, id: nodeB.id }
+    }
+  })
+  nodeB.attach('tcp://127.0.0.1:8000')
 
   try {
     await nodeA.start()
-    await nodeB.start()
     logger.info('[node-a] 已启动，监听 tcp://127.0.0.1:8000')
+    await nodeB.start()
     logger.info('[node-b] 已启动，已连接到 [node-a]')
 
-    // 直接调用业务方法，如同本地对象
-    const math = nodeB.service('math')
-    const addResult = await math.add(10, 20)
-    logger.info(`[node-b] 调用 [node-a].math.add(10, 20) = ${addResult}`)
+    // ── A 调用 B 的 identifier 服务 ──────────────────
+    const bIdentifier = nodeA.service('identifier')
+    const bInfo = await bIdentifier.whoAreYou()
+    logger.info(`[node-a] 调用 [node-b].identifier.whoAreYou() = ${JSON.stringify(bInfo)}`)
 
-    const multiplyResult = await math.multiply(6, 7)
-    logger.info(`[node-b] 调用 [node-a].math.multiply(6, 7) = ${multiplyResult}`)
-
-    // ── 对等特性：Node A 也可以调用 Node B 的服务 ─────
-    nodeB.register('echo', {
-      ping () {
-        return 'pong from node-B'
-      }
-    })
-
-    const echo = nodeA.service('echo')
-    const pingResult = await echo.ping()
-    logger.info(`[node-a] 调用 [node-b].echo.ping() = ${pingResult}`)
+    // ── B 调用 A 的 identifier 服务 ──────────────────
+    const aIdentifier = nodeB.service('identifier')
+    const aInfo = await aIdentifier.whoAreYou()
+    logger.info(`[node-b] 调用 [node-a].identifier.whoAreYou() = ${JSON.stringify(aInfo)}`)
   } finally {
-    // 依次停止，ExecUtils.quiet 吞掉单个 stop 异常，避免一个失败阻塞另一个退出
     await ExecUtils.quiet(() => nodeB.stop(), logger)
+    logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
-    logger.info('[node-a, node-b] 两个节点已停止')
+    logger.info(`${nodeA}，已停止`)
   }
 }
 

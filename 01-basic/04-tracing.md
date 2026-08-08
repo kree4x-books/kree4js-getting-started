@@ -18,8 +18,6 @@ Tracing是为AI而进行的特异化设计。
 
 Kree4X的Tracing，以单次服务调用为粒度，自动追踪Caller与Callee之间的全栈调用及通信过程，形成完整的、包含主时间线、多分支时间线的完整全链路追踪信息。
 
-追踪数据包含：服务发现、请求发送、响应接收等各阶段的时间戳和耗时。
-
 详情参考：[追踪：KreeX Tracing](https://zhuanlan.zhihu.com/p/2036394167438415089)
 
 **时间事件: Time-based Action Event**
@@ -193,9 +191,9 @@ ctx.tracer: Tracer
 phase(name: string): TracePhase
 ```
 
-**记录追踪事件 tracer.trace()**
+**记录追踪事件 phase.trace()**
 
-在Tracer的主时间线上追加一个时间事件。
+在当前Tracer的时间线上追加一个时间事件。
 
 ```typescript
 /**

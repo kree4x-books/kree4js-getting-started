@@ -40,7 +40,9 @@ Caller与Callee是相对的，同样是一个动态的概念。
 
 **服务存根: Service Stub**
 
-使用kree4x.service(name)，可以获取一个服务的透明代理。
+服务存根，实际是一个基于ServiceCluster实例的ES6 Proxy。
+
+使用kree4x.service(name):ServiceCluster，可以获取一个服务的透明代理。
 
 这个透明代理，我们称之为服务存根。
 
