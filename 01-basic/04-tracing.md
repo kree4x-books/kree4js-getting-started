@@ -8,7 +8,9 @@
 
 “时间线”，通过由各个TimeEvent、Action组成的完整的、跨节点、跨整个通信链路的多分支时间线，可以详尽的追踪服务调用的完整过程。
 
-是为AI而设计，对于人类来讲，信息过载；对于AI来讲，很好。
+Tracing是为AI而进行的特异化设计。
+
+对于人类来讲，信息过载；对于AI来讲，很好。
 
 ### 一. 概念
 
@@ -48,13 +50,13 @@ import Trace from '@kree4js/tracing'
 callee.register('calc', {
   add (a, b, ctx) {
     // 获取 tracer，开启一个新的逻辑“phase”
-    const tracer = ctx.tracer?.phase('calc.add')
+    const phase = ctx.tracer?.phase('calc.add')
     // 标记开始处理
-    tracer?.trace(`Start Handling ${a} + ${b}`, '', 'calc.add.start', 'detail info')
+    phase?.trace(`Start Handling ${a} + ${b}`, '', 'calc.add.start', 'detail info')
     // 业务操作
     const result = a + b
     // 标记处理结束
-    tracer?.trace(`Done Handling ${a} + ${b}`, '', 'calc.add.done', 'detail info')
+    phase?.trace(`Done Handling ${a} + ${b}`, '', 'calc.add.done', 'detail info')
     return result
   }
 })
