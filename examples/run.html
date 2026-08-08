@@ -87,9 +87,19 @@
         const parameters = LZString.compressToBase64(JSON.stringify(definition))
 
         spinnerEl.style.display = 'none'
-        statusEl.textContent = '正在打开 CodeSandbox...'
+        statusEl.textContent = '正在创建 CodeSandbox...'
 
-        window.location.href = 'https://codesandbox.io/api/v1/sandboxes/define?parameters=' + encodeURIComponent(parameters)
+        const res = await fetch(
+          'https://codesandbox.io/api/v1/sandboxes/define?json=1&parameters=' + encodeURIComponent(parameters)
+        )
+        if (!res.ok) {
+          setError('创建失败: HTTP ' + res.status)
+          return
+        }
+        const data = await res.json()
+
+        statusEl.textContent = '正在打开 CodeSandbox Cloud...'
+        window.location.href = 'https://codesandbox.io/p/sandbox/' + data.sandbox_id
       } catch (err) {
         setError('加载失败: ' + err.message)
       }
