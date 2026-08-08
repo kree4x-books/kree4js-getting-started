@@ -111,4 +111,4 @@ service(name: string): ServiceCluster
 
 完整示例代码，参见：[05-peer-register-invoke.mjs](../examples/01-basic/05-peer-register-invoke.mjs)
 
-[▶ 在线运行](../examples/run.html?file=01-basic/05-peer-register-invoke.mjs)
+<a href="javascript:void(0)" onclick="window.open('../examples/run.html?file=01-basic/05-peer-register-invoke.mjs')">▶ 在线运行</a>
