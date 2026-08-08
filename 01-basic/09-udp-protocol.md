@@ -28,12 +28,10 @@ UDP 单帧大小受 MTU 限制，过大的数据报会触发 IP 分片，增加�
 
 **帧级 ACK（ack）**
 
-UDP 本身不可靠，Kree4X 提供可选的帧级 ACK 机制保证可靠传输：
+UDP 传送不可靠，Kree4X 提供可选的帧级 ACK 机制保证可靠传输：
 
 - `ack: true` 时，每帧发送后等待 ACK 响应，超时未收到则自动重试
 - 不启用 ack 时，消息尽力送达，不保证可靠性
-
-要使用 UDP 传输，请务必启用 `ack: true`。
 
 ### 二. 示例代码
 
@@ -83,27 +81,22 @@ const greetResult = await str.greet('World')        // "Hello, World! (via UDP)"
 
 **必须分帧**
 
-UDP 数据报大小受限，超出限制的消息必须分帧传输。不设置 `frameLimit` 或设置过大时（如 65507），可能会触发 IP 分片，降低传输可靠性。
+UDP 数据报大小受限，超出限制的消息必须分帧传输。
+
+不设置 `frameLimit` 或设置过大时（如 65507），可能会触发 IP 分片，降低传输可靠性。
 
 **可靠性由 ack 保证**
 
 UDP 本质不可靠：
 
-- 本地网络环境可能丢包
-- 数据报可能乱序到达，重排由分帧机制保证
-- `ack: false`（默认）时消息尽力送达，不保证送达顺序，仅适合可容忍丢包的业务
+- 本地网络环境可能丢包，数据报可能乱序到达
+- Kree4X Transport传输层可保证数据帧的乱序、拖帧、粘帧重组，但是无法处理丢包
 
-生产环境建议固定使用 `ack: true`。
+**是否开启ack需要权衡**
 
-**与 HTTP 示例基本相同，除了协议是"udp"**
-
-Kree4X 的服务与底层通信是无关的。
-
-同样一个服务，既可以跑在 TCP/HTTP 网络，也可以无差别地运行在 UDP 网络。
-
-**双向互调能力**
-
-与 TCP 相同，连接建立后两端对等，任意一端都可注册服务和调用对方服务。
+- 开启ack，会降低RPS(Request Per Second)
+- 局域网内，丢包是小事件，可以不开启
+- 广域网，如果网络延时较高，不稳定，建议开启
 
 ### 四. 涉及到的API:
 
@@ -133,4 +126,4 @@ node.attach(url: string, options?: { frameLimit?: number, ack?: boolean }): this
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[10-udp-protocol.mjs](../examples/01-basic/10-udp-protocol.mjs)
+完整示例代码，参见：[09-udp-protocol.mjs](../examples/01-basic/09-udp-protocol.mjs)
