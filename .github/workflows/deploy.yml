@@ -36,6 +36,10 @@ jobs:
           BOOK_NAME: ${{ github.event.repository.name }}
         run: |
           rm -rf _book/.github _book/.gitignore
+          rm -f _book/.npmrc _book/.nvmrc _book/eslint.config.mjs \
+                _book/package.json _book/package-lock.json \
+                _book/tsconfig.base.json _book/tracing.svg
+          rm -rf _book/.vscode
           tar czf _book.tar.gz -C _book .
           tar czf examples.tar.gz -C examples .
           scp -i ~/.ssh/deploy_key _book.tar.gz examples.tar.gz \
