@@ -111,4 +111,3 @@ service(name: string): ServiceCluster
 
 完整示例代码，参见：[05-peer-register-invoke.mjs](../examples/01-basic/05-peer-register-invoke.mjs)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kree4x-books/kree4js-getting-started)

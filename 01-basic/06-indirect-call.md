@@ -111,4 +111,3 @@ Kree4n.create(name: string, description?: string, options?: { transport?: { prox
 
 完整示例代码，参见：[06-indirect-call.mjs](../examples/01-basic/06-indirect-call.mjs)
 
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/kree4x-books/kree4js-getting-started)
