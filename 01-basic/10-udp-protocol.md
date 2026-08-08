@@ -1,3 +1,136 @@
 # 使用UDP协议连接
 
 > Created By [RV](mailto:rodney.vin@gmail.com), and licensed with Creative Commons "[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)"
+
+**目的与场景**
+
+在这一章，讲解**两个NodeJS节点**如何通过UDP协议互联，实现双向RPC调用。
+
+### 一. 概念
+
+**UDP 协议**
+
+UDP 是面向数据报的无连接传输协议：
+
+- 不建立连接、无握手，每个消息是一个独立数据报
+- 收发双方只需要知道对方的 (IP, 端口) 即可发送数据
+- 不保证送达：数据报可能丢失、乱序、重复
+- 没有 TCP 的拥塞控制与重传机制，单帧大小天然受限
+
+与 TCP 不同，UDP 没有 keepalive / 重连概念，连接的可靠性完全由应用层保证。
+
+**分帧（frameLimit）**
+
+UDP 单帧大小受 MTU 限制，过大的数据报会触发 IP 分片，增加丢失风险。Kree4X 通过 `frameLimit` 将消息切分为多个帧发送，接收端自动重组。
+
+- UDP 建议 `frameLimit: 1152`，避免 IP 分片
+- 该值需在网络中的每一个节点保持一致
+
+**帧级 ACK（ack）**
+
+UDP 本身不可靠，Kree4X 提供可选的帧级 ACK 机制保证可靠传输：
+
+- `ack: true` 时，每帧发送后等待 ACK 响应，超时未收到则自动重试
+- 不启用 ack 时，消息尽力送达，不保证可靠性
+
+要使用 UDP 传输，请务必启用 `ack: true`。
+
+### 二. 示例代码
+
+在下边的示例中，我们将：
+
+- nodeA作为UDP服务器，监听端口8060，注册calc服务
+- nodeB作为UDP客户端，连接nodeA，注册str服务
+- nodeB调用nodeA的calc服务
+- nodeA调用nodeB的str服务（双向互调）
+
+```javascript
+import Kree4n from '@kree4js/kree4n'
+
+// ── Node A（UDP服务器，注册calc服务） ─────────────
+const nodeA = Kree4n.create('node-a', 'UDP RPC server')
+nodeA.register('calc', {
+  add (a, b) { return a + b },
+  multiply (a, b) { return a * b }
+})
+// ack: true 启用帧级 ACK，保证 UDP 消息可靠到达
+nodeA.listen('udp://127.0.0.1:8060', { frameLimit: 1152, ack: true })
+
+// ── Node B（UDP客户端，注册str服务） ─────────────
+const nodeB = Kree4n.create('node-b', 'UDP RPC client')
+nodeB.register('str', {
+  echo (msg) { return `Echo: ${msg}` },
+  greet (name) { return `Hello, ${name}! (via UDP)` }
+})
+nodeB.attach('udp://127.0.0.1:8060', { frameLimit: 1152, ack: true })
+
+await nodeA.start()
+await nodeB.start()
+
+// node-b 调用 node-a 的 calc 服务
+const calc = nodeB.service('calc')
+const addResult = await calc.add(10, 20)      // 30
+const mulResult = await calc.multiply(6, 7)   // 42
+
+// node-a 调用 node-b 的 str 服务（双向）
+const str = nodeA.service('str')
+const echoResult = await str.echo('UDP works!')   // "Echo: UDP works!"
+const greetResult = await str.greet('World')        // "Hello, World! (via UDP)"
+
+```
+
+### 三. 须强调的细节
+
+**必须分帧**
+
+UDP 数据报大小受限，超出限制的消息必须分帧传输。不设置 `frameLimit` 或设置过大时（如 65507），可能会触发 IP 分片，降低传输可靠性。
+
+**可靠性由 ack 保证**
+
+UDP 本质不可靠：
+
+- 本地网络环境可能丢包
+- 数据报可能乱序到达，重排由分帧机制保证
+- `ack: false`（默认）时消息尽力送达，不保证送达顺序，仅适合可容忍丢包的业务
+
+生产环境建议固定使用 `ack: true`。
+
+**与 HTTP 示例基本相同，除了协议是"udp"**
+
+Kree4X 的服务与底层通信是无关的。
+
+同样一个服务，既可以跑在 TCP/HTTP 网络，也可以无差别地运行在 UDP 网络。
+
+**双向互调能力**
+
+与 TCP 相同，连接建立后两端对等，任意一端都可注册服务和调用对方服务。
+
+### 四. 涉及到的API:
+
+**UDP监听**
+
+```typescript
+/**
+ * Listens for incoming UDP connections.
+ * @param {string} url - The URL to listen on, e.g. "udp://127.0.0.1:8060".
+ * @param {{ frameLimit?: number, ack?: boolean }} [options] - The frame and reliability options.
+ * @returns {this} The current instance for chaining.
+ */
+node.listen(url: string, options?: { frameLimit?: number, ack?: boolean }): this
+```
+
+**UDP连接**
+
+```typescript
+/**
+ * Attaches to a remote node via UDP protocol.
+ * @param {string} url - The URL to attach to, e.g. "udp://127.0.0.1:8060".
+ * @param {{ frameLimit?: number, ack?: boolean }} [options] - The frame and reliability options.
+ * @returns {this} The current instance for chaining.
+ */
+node.attach(url: string, options?: { frameLimit?: number, ack?: boolean }): this
+```
+
+### 五. 可运行代码
+
+完整示例代码，参见：[10-udp-protocol.mjs](../examples/01-basic/10-udp-protocol.mjs)
