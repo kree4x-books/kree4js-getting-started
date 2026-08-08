@@ -13,7 +13,8 @@
   "license": "CC-BY-NC-ND-4.0",
   "dependencies": {
     "@kree4js/commons-logging": "^1.0.0",
-    "@kree4js/kree4n": "^1.0.0"
+    "@kree4js/kree4n": "^1.0.0",
+    "@kree4js/websocket-attach": "^1.0.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
