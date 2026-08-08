@@ -62,10 +62,7 @@
 
       try {
         const base = window.location.href.replace(/[^/]*$/, '')
-        const [fileRes, pkgRes] = await Promise.all([
-          fetch(base + file),
-          fetch(base + 'package.json')
-        ])
+        const fileRes = await fetch(base + file)
 
         if (!fileRes.ok) {
           setError('文件不存在: ' + file)
@@ -73,10 +70,14 @@
         }
 
         const fileContent = await fileRes.text()
-        let pkgContent = '{}'
-        if (pkgRes.ok) {
-          pkgContent = await pkgRes.text()
-        }
+        const pkgContent = JSON.stringify({
+          name: 'kree4js-example',
+          type: 'module',
+          dependencies: {
+            '@kree4js/commons-logging': '^1.0.0',
+            '@kree4js/kree4n': '^1.0.0'
+          }
+        }, null, 2)
 
         const fileName = file.split('/').pop()
 
