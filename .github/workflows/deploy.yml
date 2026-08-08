@@ -35,7 +35,8 @@ jobs:
         env:
           BOOK_NAME: ${{ github.event.repository.name }}
         run: |
-          tar czf _book.tar.gz --exclude='.??*' -C _book .
+          rm -rf _book/.github _book/.gitignore
+          tar czf _book.tar.gz -C _book .
           tar czf examples.tar.gz -C examples .
           scp -i ~/.ssh/deploy_key _book.tar.gz examples.tar.gz \
             ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }}:/tmp/
