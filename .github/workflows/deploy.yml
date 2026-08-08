@@ -35,12 +35,16 @@ jobs:
         env:
           BOOK_NAME: ${{ github.event.repository.name }}
         run: |
-          tar czf _book.tar.gz -C _book .
-          scp -i ~/.ssh/deploy_key _book.tar.gz ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }}:/tmp/_book.tar.gz
+          tar czf _book.tar.gz --exclude='.*' -C _book .
+          tar czf examples.tar.gz --exclude='.*' -C examples .
+          scp -i ~/.ssh/deploy_key _book.tar.gz examples.tar.gz \
+            ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }}:/tmp/
           ssh -i ~/.ssh/deploy_key ${{ vars.ECS_USER }}@${{ vars.ECS_HOST }} \
             "mkdir -p /var/www/books/${BOOK_NAME} && \
              cd /var/www/books/${BOOK_NAME} && rm -rf * && \
-             tar xzf /tmp/_book.tar.gz && rm -f /tmp/_book.tar.gz"
+             tar xzf /tmp/_book.tar.gz && \
+             mkdir -p examples && cd examples && tar xzf /tmp/examples.tar.gz && \
+             rm -f /tmp/_book.tar.gz /tmp/examples.tar.gz"
 
       - name: Cleanup
         if: always()
