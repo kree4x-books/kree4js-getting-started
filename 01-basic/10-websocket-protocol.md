@@ -101,13 +101,13 @@ WebSocket需要基于HTTP Server开放，所以对HTTP、WebSocket的支持是�
 
 ```typescript
 /**
- * Attaches to a remote node via the WebSocket protocol.
+ * 通过 WebSocket 协议连接到远端节点。
  *
  * WebSocketAttachConnectionProvider 已由 kree4n 默认注册，无需手动引入：
  * node.attach('ws://127.0.0.1:8070')
  *
- * @param {string} url - The URL to attach to, e.g. "ws://127.0.0.1:8070".
- * @returns {this} The current instance for chaining.
+ * @param {string} url - 要连接的 URL，例如 "ws://127.0.0.1:8070"。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this
 ```

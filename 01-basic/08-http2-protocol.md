@@ -65,13 +65,20 @@ await nodeB.start()
 
 // node-b 调用 node-a 的 calc 服务
 const calc = nodeB.service('calc')
-const addResult = await calc.add(10, 20)      // 30
-const mulResult = await calc.multiply(6, 7)   // 42
+const addResult = await calc.add(10, 20)      
+// 30
+
+const mulResult = await calc.multiply(6, 7)   
+// 42
 
 // node-a 调用 node-b 的 str 服务（双向）
 const str = nodeA.service('str')
-const echoResult = await str.echo('HTTP/2 works!')   // "Echo: HTTP/2 works!"
-const greetResult = await str.greet('World')          // "Hello, World! (via HTTP/2)"
+
+const echoResult = await str.echo('HTTP/2 works!')   
+// "Echo: HTTP/2 works!"
+
+const greetResult = await str.greet('World')          
+// "Hello, World! (via HTTP/2)"
 
 ```
 
@@ -120,10 +127,10 @@ HTTP/2 的每次 RPC 调用对应一条双向 stream，一条 stream 即一个�
 
 ```typescript
 /**
- * Listens for incoming HTTPS2 connections.
- * @param {string} url - The URL to listen on, e.g. "https2://127.0.0.1:8050".
- * @param {{ key: Buffer|string, cert: Buffer|string }} options - The TLS certificate options.
- * @returns {this} The current instance for chaining.
+ * 监听传入的 HTTPS2 连接。
+ * @param {string} url - 要监听的 URL，例如 "https2://127.0.0.1:8050"。
+ * @param {{ key: Buffer|string, cert: Buffer|string }} options - TLS 证书选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.listen(url: string, options?: { key?, cert? }): this
 ```
@@ -132,10 +139,10 @@ node.listen(url: string, options?: { key?, cert? }): this
 
 ```typescript
 /**
- * Attaches to a remote node via HTTPS2 protocol.
- * @param {string} url - The URL to attach to, e.g. "https2://127.0.0.1:8050".
- * @param {{ rejectUnauthorized?: boolean }} [options] - The TLS connection options.
- * @returns {this} The current instance for chaining.
+ * 通过 HTTPS2 协议连接到远端节点。
+ * @param {string} url - 要连接的 URL，例如 "https2://127.0.0.1:8050"。
+ * @param {{ rejectUnauthorized?: boolean }} [options] - TLS 连接选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string, options?: { rejectUnauthorized?: boolean }): this
 ```

@@ -141,14 +141,14 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 
 ```typescript
 /**
- * Registers a service implementation.
+ * 注册一个服务实现。
  *
- * @param {string} serviceName - The name of the service.
- * @param {object|(new (...args:any[])=>Service)} serviceImpl - The service implementation object or class.
- * @param {{[key:string]:any}} [serviceOption] - The service configuration options.
- * @returns {Service} The created service instance.
+ * @param {string} serviceName - 服务名称。
+ * @param {object|(new (...args:any[])=>Service)} serviceImpl - 服务实现对象或类。
+ * @param {{[key:string]:any}} [serviceOption] - 服务配置选项。
+ * @returns {Service} 创建的服务实例。
  */
-register(serviceName: string, serviceImpl: object | (new (...args: any[]) => Service), serviceOption?: {[key: string]: any}): Service
+register(serviceName, serviceImpl, serviceOption?): Service
 ```
 
 **注册类服务 registerClass()**
@@ -157,14 +157,14 @@ register(serviceName: string, serviceImpl: object | (new (...args: any[]) => Ser
 
 ```typescript
 /**
- * Registers a class-based service implementation.
+ * 注册一个基于类的服务实现。
  *
- * @param {string} serviceName - The name of the service.
- * @param {(new (...args:any[])=>Service)} serviceImpl - The service class constructor.
- * @param {{[key:string]:any}} [serviceOption] - The service configuration options.
- * @returns {Service} The created service instance.
+ * @param {string} serviceName - 服务名称。
+ * @param {(new (...args:any[])=>Service)} serviceImpl - 服务类构造函数。
+ * @param {{[key:string]:any}} [serviceOption] - 服务配置选项。
+ * @returns {Service} 创建的服务实例。
  */
-registerClass(serviceName: string, serviceImpl: new (...args: any[]) => Service, serviceOption?: {[key: string]: any}): Service
+registerClass(serviceName, serviceImpl, serviceOption?): Service
 ```
 
 **获取服务存根 service()**
@@ -173,14 +173,14 @@ registerClass(serviceName: string, serviceImpl: new (...args: any[]) => Service,
 
 ```typescript
 /**
- * Gets or creates a caller service cluster.
+ * 获取或创建一个调用方服务集群。
  *
- * @param {string} name - The qualified name of the service.
- * @param {ServiceClusterOptions} [options] - The service cluster options.
- * @param {boolean} [forceNew=false] - Force to create new ServiceCluster.
- * @returns {ServiceCluster} The service cluster instance.
+ * @param {string} name - 服务的限定名称。
+ * @param {ServiceClusterOptions} [options] - 服务集群选项。
+ * @param {boolean} [forceNew=false] - 是否强制创建新的 ServiceCluster。
+ * @returns {ServiceCluster} 服务集群实例。
  */
-service(name: string, options?: ServiceClusterOptions, forceNew?: boolean): ServiceCluster
+service(name, options?, forceNew?): ServiceCluster
 ```
 
 ### 五. 可运行代码

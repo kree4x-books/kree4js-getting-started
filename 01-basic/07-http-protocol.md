@@ -112,10 +112,10 @@ NodeJS HTTP协议下，使用流式通信，如果每次发送一个完整的帧
 
 ```typescript
 /**
- * Listens for incoming connections.
- * @param {string} url - The URL to listen on, e.g. "http://127.0.0.1:8040".
- * @param {ConnectionOptions} [options] - The connection options.
- * @returns {this} The current instance for chaining.
+ * 监听传入的连接。
+ * @param {string} url - 要监听的 URL，例如 "http://127.0.0.1:8040"。
+ * @param {ConnectionOptions} [options] - 连接选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.listen(url: string, options?: ConnectionOptions): this
 ```
@@ -124,8 +124,9 @@ node.listen(url: string, options?: ConnectionOptions): this
 
 ```typescript
 /**
- * Connects to an HTTP server via HTTP protocol.
- * @param {string} url - The HTTP URL to connect to, e.g. "http://127.0.0.1:8040".
+ * 通过 HTTP 协议连接到 HTTP 服务器。
+ * @param {string} url - 要连接的 HTTP URL，例如 "http://127.0.0.1:8040"。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this
 ```

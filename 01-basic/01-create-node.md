@@ -104,13 +104,13 @@ Web客户端，使用这个版本。
 
 ```typescript
 /* 
- * @param {string} name - The name of the KreeX node.
- * @param {string} description - A human-readable description.
+ * @param {string} name - KreeX 节点的名称。
+ * @param {string} description - 人类可读的描述。
  * @param {{
  *   worker?: { workerCount?: number, threshold?: number },
  *   transport?: TransportOptions;
  *   [key:string]: any
- * }} [options] - Additional options.
+ * }} [options]
  * @returns {import('@kree4js/kree4js').KreeX}
  */
 function create(name: string, description: string, options?: {

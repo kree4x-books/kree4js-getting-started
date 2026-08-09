@@ -82,8 +82,9 @@ nodeB.attach('kafka://127.0.0.1:8092')
 await nodeA.start()
 await nodeB.start()
 
-// 等待 KreeX Grid 通过 Kafka 发现完成（约3秒）
-await new Promise(resolve => setTimeout(resolve, 3000))
+// 等待 KreeX Grid 通过 Kafka 发现对方节点就绪
+await nodeA.whenReady(nodeB, 5000)
+await nodeB.whenReady(nodeA, 5000)
 
 // node-b 调用 node-a 的 calc 服务
 const calc = nodeB.service('calc')
@@ -153,16 +154,16 @@ dynamic模式时，各个Kree4X节点的互相发现比较缓慢，节点启动�
 
 ```typescript
 /**
- * Attaches to a remote node via the Kafka protocol.
+ * 通过 Kafka 协议连接到远端节点。
  *
  * 使用前需在节点上注册 KafkaAttachConnectionProvider：
  * node.useConnectionProvider(new KafkaAttachConnectionProvider())
  *
- * @param {string} url - The URL of the Kafka broker, e.g. "kafka://127.0.0.1:8092".
- * @param {{ topicMode?: 'broadcast'|'dynamic' }} [options] - The topic mode.
+ * @param {string} url - Kafka broker 的 URL，例如 "kafka://127.0.0.1:8092"。
+ * @param {{ topicMode?: 'broadcast'|'dynamic' }} [options] - 主题模式。
  *   'broadcast': 所有节点共享 topic 'kree4x'（默认，topic 需预创建）
  *   'dynamic':   每节点私有 topic 'kree4x-{nodeId}'，允许自动创建
- * @returns {this} The current instance for chaining.
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string, options?: { topicMode?: 'broadcast'|'dynamic' }): this
 ```

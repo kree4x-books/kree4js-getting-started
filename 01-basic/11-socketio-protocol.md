@@ -110,13 +110,13 @@ Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网
 
 ```typescript
 /**
- * Listens for incoming Socket.IO connections.
+ * 监听传入的 Socket.IO 连接。
  *
  * 使用前需安装 @kree4js/socketio-listen 并注册 SocketioListenConnectionProvider：
  * node.useConnectionProvider(new SocketioListenConnectionProvider())
  *
- * @param {string} url - The URL to listen on, e.g. "io://127.0.0.1:8030".
- * @returns {this} The current instance for chaining.
+ * @param {string} url - 要监听的 URL，例如 "io://127.0.0.1:8030"。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.listen(url: string): this
 ```
@@ -125,13 +125,13 @@ node.listen(url: string): this
 
 ```typescript
 /**
- * Attaches to a remote node via the Socket.IO protocol.
+ * 通过 Socket.IO 协议连接到远端节点。
  *
  * 使用前需安装 @kree4js/socketio-attach 并注册 SocketioAttachConnectionProvider：
  * node.useConnectionProvider(new SocketioAttachConnectionProvider())
  *
- * @param {string} url - The URL to attach to, e.g. "io://127.0.0.1:8030".
- * @returns {this} The current instance for chaining.
+ * @param {string} url - 要连接的 URL，例如 "io://127.0.0.1:8030"。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this
 ```

@@ -104,10 +104,10 @@ UDP 本质不可靠：
 
 ```typescript
 /**
- * Listens for incoming UDP connections.
- * @param {string} url - The URL to listen on, e.g. "udp://127.0.0.1:8060".
- * @param {{ frameLimit?: number, ack?: boolean }} [options] - The frame and reliability options.
- * @returns {this} The current instance for chaining.
+ * 监听传入的 UDP 连接。
+ * @param {string} url - 要监听的 URL，例如 "udp://127.0.0.1:8060"。
+ * @param {{ frameLimit?: number, ack?: boolean }} [options] - 帧大小与可靠性选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.listen(url: string, options?: { frameLimit?: number, ack?: boolean }): this
 ```
@@ -116,10 +116,10 @@ node.listen(url: string, options?: { frameLimit?: number, ack?: boolean }): this
 
 ```typescript
 /**
- * Attaches to a remote node via UDP protocol.
- * @param {string} url - The URL to attach to, e.g. "udp://127.0.0.1:8060".
- * @param {{ frameLimit?: number, ack?: boolean }} [options] - The frame and reliability options.
- * @returns {this} The current instance for chaining.
+ * 通过 UDP 协议连接到远端节点。
+ * @param {string} url - 要连接的 URL，例如 "udp://127.0.0.1:8060"。
+ * @param {{ frameLimit?: number, ack?: boolean }} [options] - 帧大小与可靠性选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string, options?: { frameLimit?: number, ack?: boolean }): this
 ```

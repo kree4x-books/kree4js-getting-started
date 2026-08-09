@@ -142,7 +142,6 @@ Kree4n.create(name: string, description?: string, options?: CreateOptions)
  * 流读取器抽象基类。
  */
 abstract class StreamReader {
-  // getter/setter
   /** 流类型标识，用于占位符创建；子类可覆盖（如 'File'）。 */
   get type(): string
 

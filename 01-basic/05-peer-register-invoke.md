@@ -84,13 +84,13 @@ listen/attach只是连接建立的方向不同，连接建立后，双方完全�
 
 ```typescript
 /**
- * Registers a service implementation.
+ * 注册一个服务实现。
  *
- * @param {string} serviceName - The name of the service.
- * @param {object} serviceImpl - The service implementation object.
- * @returns {Service} The created service instance.
+ * @param {string} serviceName - 服务名称。
+ * @param {object} serviceImpl - 服务实现对象。
+ * @returns {Service} 创建的服务实例。
  */
-register(serviceName: string, serviceImpl: object): Service
+register(serviceName, serviceImpl): Service
 ```
 
 **获取服务存根 service()**
@@ -99,12 +99,12 @@ register(serviceName: string, serviceImpl: object): Service
 
 ```typescript
 /**
- * Gets or creates a caller service cluster.
+ * 获取或创建一个调用方服务集群。
  *
- * @param {string} name - The qualified name of the service.
- * @returns {ServiceCluster} The service cluster instance.
+ * @param {string} name - 服务的限定名称。
+ * @returns {ServiceCluster} 服务集群实例。
  */
-service(name: string): ServiceCluster
+service(name): ServiceCluster
 ```
 
 ### 五. 可运行代码

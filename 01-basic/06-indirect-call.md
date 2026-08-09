@@ -99,10 +99,10 @@ const result = await greet.hello('World')
 
 ```typescript
 /**
- * Creates a KreeX instance with proxyMode enabled.
- * @param {string} name - The node name.
- * @param {string} [description] - The node description.
- * @param {{ transport?: { proxyMode?: boolean } }} [options] - Transport options.
+ * 创建一个启用 proxyMode 的 KreeX 实例。
+ * @param {string} name - 节点名称。
+ * @param {string} [description] - 节点描述。
+ * @param {{ transport?: { proxyMode?: boolean } }} [options] - 传输层选项。
  */
 Kree4n.create(name: string, description?: string, options?: { transport?: { proxyMode?: boolean } }): KreeX
 ```

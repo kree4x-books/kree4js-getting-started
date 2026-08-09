@@ -130,13 +130,13 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 
 ```typescript
 /**
-  * Listens for incoming connections.
+  * 监听传入的连接。
   *
-  * @param {string} url - The URL to listen on.
-  * @param {ConnectionOptions} [options] - The connection options.
-  * @returns {this} The current instance for chaining.
+  * @param {string} url - 要监听的 URL。
+  * @param {ConnectionOptions} [options] - 连接选项。
+  * @returns {this} 当前实例，用于链式调用。
   */
-listen(url: string, options?: ConnectionOptions): this;
+listen(url, options?): this;
 ```
 
 **Attach一个URL**
@@ -147,23 +147,23 @@ listen(url: string, options?: ConnectionOptions): this;
 
 ```typescript
 /**
- * Attaches to a remote node.
+ * 连接到远端节点。
  *
- * @param {string} url - The URL to attach to.
- * @param {ConnectionOptions} [options] - The connection options.
- * @returns {this} The current instance for chaining.
+ * @param {string} url - 要连接的 URL。
+ * @param {ConnectionOptions} [options] - 连接选项。
+ * @returns {this} 当前实例，用于链式调用。
  */
-attach(url: string, options?: ConnectionOptions): this;
+attach(url, options?): this;
 ```
 
 **启动一个节点**
 
 ```typescript
 /**
- * Starts the KreeX instance.
+ * 启动 KreeX 实例。
  *
- * @param {number} [timeout=30000] - The startup timeout in milliseconds.
- * @returns {Promise<void>} A promise that resolves when started.
+ * @param {number} [timeout=30000] - 启动超时时间（毫秒）。
+ * @returns {Promise<void>}
  */
 start(timeout?: number): Promise<void>;
 ```
@@ -172,9 +172,9 @@ start(timeout?: number): Promise<void>;
 
 ```typescript
 /**
- * Stops the KreeX instance.
+ * 停止 KreeX 实例。
  *
- * @returns {Promise<void>} A promise that resolves when stopped.
+ * @returns {Promise<void>}
  */
 stop(): Promise<void>;
 ```

@@ -148,8 +148,8 @@ Kree4X內建“自动重试、自动Tracing”机制。
 
 ```typescript
 /**
- * Gets or sets the trace enabled flag.
- * When true, all subsequent calls on this service cluster will be traced.
+ * 获取或设置 trace 启用标志。
+ * 设为 true 时，本服务集群上之后的所有调用都会被追踪。
  */
 ServiceStub.traceEnabled: boolean
 ```
@@ -160,8 +160,8 @@ ServiceStub.traceEnabled: boolean
 
 ```typescript
 /**
- * Gets the tracer from the last service call.
- * Returns undefined if no call has been made or tracing was not enabled.
+ * 获取最近一次服务调用的 tracer。
+ * 若尚未发生过调用或追踪未启用，返回 undefined。
  */
 ServiceStub.lastTracer: Tracer
 ```
@@ -172,8 +172,8 @@ ServiceStub.lastTracer: Tracer
 
 ```typescript
 /**
- * In service implementation, the last parameter is context injected by the framework.
- * Use ctx.tracer to access the tracer for this call.
+ * 在服务实现中，最后一个参数是由框架注入的上下文。
+ * 通过 ctx.tracer 访问本次调用的 tracer。
  */
 ctx.tracer: Tracer
 ```
@@ -185,10 +185,10 @@ ctx.tracer: Tracer
 ```typescript
 /**
  * Create a TracePhase to avoid tracer.trace(phase, ...)
- * @param {string} name - The phase name.
- * @returns {TracePhase} A trace phase instance.
+ * @param {string} name - 阶段名称。
+ * @returns {TracePhase} 追踪阶段实例。
  */
-phase(name: string): TracePhase
+phase(name): TracePhase
 ```
 
 **记录追踪事件 phase.trace()**
@@ -197,12 +197,12 @@ phase(name: string): TracePhase
 
 ```typescript
 /**
- * Append a Time-based Action Event into the tail of Tracer's main timeline.
- * @param {string} summary - The summary of the event.
- * @param {any} actor - The actor who performed the action.
- * @param {string} action - The action name.
- * @param {...any} args - Additional arguments related to the action.
- * @returns {TimeEvent} The created time event.
+ * 在 Tracer 主时间线末尾追加一个基于时间的动作事件。
+ * @param {string} summary - 事件摘要。
+ * @param {any} actor - 执行该动作的行为者。
+ * @param {string} action - 动作名称。
+ * @param {...any} args - 与该动作相关的附加参数。
+ * @returns {TimeEvent} 创建的时间事件。
  */
 phase.trace(summary: string, actor: any, action: string, ...args: any[]): TimeEvent
 ```
@@ -213,13 +213,13 @@ phase.trace(summary: string, actor: any, action: string, ...args: any[]): TimeEv
 
 ```typescript
 /**
- * Output the tracer's timeline.
- * @param {Formatter} formatter - The formatter (SvgFormatter, JsonFormatter, TextFormatter).
- * @param {Writer} [writer] - The writer (FileWriter, ConsoleWriter, LoggerWriter).
- * @param {any} [level] - The output level (Trace.OutputLevel.INFO, etc.).
- * @returns {string|any} The formatted result.
+ * 输出 tracer 的时间线。
+ * @param {Formatter} formatter - 格式化器（SvgFormatter、JsonFormatter、TextFormatter）。
+ * @param {Writer} [writer] - 写入器（FileWriter、ConsoleWriter、LoggerWriter）。
+ * @param {any} [level] - 输出级别（如 Trace.OutputLevel.INFO）。
+ * @returns {string|any} 格式化后的结果。
  */
-output(formatter: Formatter, writer?: Writer, level?: any): string | any
+output(formatter, writer?, level?): string | any
 ```
 
 ### 五. 可运行代码
