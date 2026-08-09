@@ -24,7 +24,7 @@ async function main () {
 
   logger.info('')
   logger.info('=== 已注册的网络层连接提供器（ConnectionProvider） ===')
-  const providers = node1.transport.ports.connectionProviders.providers()
+  const providers = node1.ports.transport.connectionProviders.providers()
   for (const provider of providers) {
     logger.info(`  - ${provider.name()}`)
   }

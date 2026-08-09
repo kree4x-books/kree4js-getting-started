@@ -21,8 +21,16 @@ Socket.IO 是一个基于 WebSocket 构建的实时通信库，并内置多传�
 
 **Socket.IO 在 Kree4X 中的角色**
 
-- 服务端由 `socketio-listen` 提供，客户端由 `socketio-attach` 提供
-- **无需手动注册**：kree4n 默认注册了 `SocketioListenConnectionProvider` 和 `SocketioAttachConnectionProvider`
+Socket.IO 是第三方库，代码体积较大，不适合内建于 kree4n。
+
+kree4n 不内置 Socket.IO 的 Provider，需要独立安装：
+
+```bash
+npm install @kree4js/socketio-listen @kree4js/socketio-attach
+```
+
+- 服务端由 `@kree4js/socketio-listen` 提供，客户端由 `@kree4js/socketio-attach` 提供
+- **需要手动注册**：listen/attach 两侧都要注册对应的 Connection Provider
 - Socket.IO URL 使用 `io://` 协议，与服务端的监听地址一一对应
 
 ### 二. 示例代码
@@ -36,9 +44,13 @@ Socket.IO 是一个基于 WebSocket 构建的实时通信库，并内置多传�
 
 ```javascript
 import Kree4n from '@kree4js/kree4n'
+import { SocketioListenConnectionProvider } from '@kree4js/socketio-listen'
+import { SocketioAttachConnectionProvider } from '@kree4js/socketio-attach'
 
 // ── Node A（Socket.IO服务器，注册calc服务） ─────────────
 const nodeA = Kree4n.create('node-a', 'Socket.IO RPC server')
+// SocketioListenConnectionProvider 需手动注册后才能识别 io:// 协议
+nodeA.useConnectionProvider(new SocketioListenConnectionProvider())
 nodeA.register('calc', {
   add (a, b) { return a + b },
   multiply (a, b) { return a * b }
@@ -47,6 +59,8 @@ nodeA.listen('io://127.0.0.1:8030')
 
 // ── Node B（Socket.IO客户端，注册str服务） ─────────────
 const nodeB = Kree4n.create('node-b', 'Socket.IO RPC client')
+// SocketioAttachConnectionProvider 需手动注册后才能识别 io:// 协议
+nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
 nodeB.register('str', {
   echo (msg) { return `Echo: ${msg}` },
   greet (name) { return `Hello, ${name}! (via Socket.IO)` }
@@ -69,9 +83,22 @@ const greetResult = await str.greet('World')           // "Hello, World! (via So
 
 ### 三. 须强调的细节
 
-**无需手动注册**
+**需要手动安装并注册**
 
-与 WebSocket（需手动注册 `WebSocketAttachConnectionProvider`）不同，Socket.IO 的 listen/attach provider 是 kree4n **默认注册**的，直接使用 `io://` 协议即可，不需要额外 import。
+Socket.IO 是第三方库，体积较大，kree4n 不内置。使用前需要：
+
+1. 安装独立包：`npm install @kree4js/socketio-listen @kree4js/socketio-attach`
+2. 服务端注册 `SocketioListenConnectionProvider`，客户端注册 `SocketioAttachConnectionProvider`：
+
+```javascript
+import { SocketioListenConnectionProvider } from '@kree4js/socketio-listen'
+import { SocketioAttachConnectionProvider } from '@kree4js/socketio-attach'
+
+nodeA.useConnectionProvider(new SocketioListenConnectionProvider())
+nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
+```
+
+不注册对应组件，`io://` 协议将无法被识别，listen/attach 会直接失败。
 
 **传输回退**
 
@@ -84,6 +111,10 @@ Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网
 ```typescript
 /**
  * Listens for incoming Socket.IO connections.
+ *
+ * 使用前需安装 @kree4js/socketio-listen 并注册 SocketioListenConnectionProvider：
+ * node.useConnectionProvider(new SocketioListenConnectionProvider())
+ *
  * @param {string} url - The URL to listen on, e.g. "io://127.0.0.1:8030".
  * @returns {this} The current instance for chaining.
  */
@@ -95,6 +126,10 @@ node.listen(url: string): this
 ```typescript
 /**
  * Attaches to a remote node via the Socket.IO protocol.
+ *
+ * 使用前需安装 @kree4js/socketio-attach 并注册 SocketioAttachConnectionProvider：
+ * node.useConnectionProvider(new SocketioAttachConnectionProvider())
+ *
  * @param {string} url - The URL to attach to, e.g. "io://127.0.0.1:8030".
  * @returns {this} The current instance for chaining.
  */

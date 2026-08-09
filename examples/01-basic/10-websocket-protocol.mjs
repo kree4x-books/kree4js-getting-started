@@ -2,7 +2,6 @@
 import { ExecUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n from '@kree4js/kree4n'
-import { WebSocketAttachConnectionProvider } from '@kree4js/websocket-attach'
 
 // vars
 Logging.setLevel('DEBUG')
@@ -15,7 +14,7 @@ const logger = Logging.getLogger('websocket-protocol')
  * - nodeB（websocket-attach）：以WebSocket客户端身份连接nodeA，注册str服务
  *
  * 关键点：
- * - WebSocketAttachConnectionProvider 不是 kree4n 默认注册的，需要手动注册
+ * - WebSocketAttachConnectionProvider 由 kree4n 默认注册，无需手动引入
  * - WebSocket 服务端由 http-listen 内部提供，nodeA 仍用 http:// 监听
  * - nodeB 使用 ws:// 协议与普通 HTTP 客户端区分
  *
@@ -34,8 +33,6 @@ async function main () {
 
   // ── Node B（WebSocket客户端，注册str服务） ─────────────
   const nodeB = Kree4n.create('node-b', 'WebSocket RPC client')
-  // WebSocketAttachConnectionProvider 需手动注册后才能识别 ws:// 协议
-  nodeB.transport.ports.useConnectionProvider(new WebSocketAttachConnectionProvider())
   nodeB.register('str', {
     echo (msg) { return `Echo: ${msg}` },
     greet (name) { return `Hello, ${name}! (via WebSocket)` }

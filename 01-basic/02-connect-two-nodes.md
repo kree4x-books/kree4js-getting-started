@@ -32,16 +32,19 @@ Open一个NetPoint就得到一个连接。
 
 **通信协议**
 
-Kree4N，默认支持多种通信协议：
+Kree4N，默认内置支持多种通信协议：
 
 - `http://` - HTTP， 同时支持Listen、Attach两种模式
 - `http2://` - HTTP/2， 同时支持Listen、Attach两种模式
 - `tcp://` - TCP， 同时支持Listen、Attach两种模式
 - `udp://` - UDP， 同时支持Listen、Attach两种模式
-- `io://` - Socket.IO， 同时支持Listen、Attach两种模式
 - `ws://` - WebSocket， 同时支持Listen、Attach两种模式
-- `kafka://` - Kafka， 仅限Attach模式
 - 允许自定义ConnectionProvider，支持更多通信协议
+
+以下协议需要单独安装、手动注册 ConnectionProvider（不内建于 kree4n）：
+
+- `io://` - Socket.IO， 同时支持Listen、Attach两种模式
+- `kafka://` - Kafka， 仅限Attach模式
 
 ### 二. 连接两个节点
 

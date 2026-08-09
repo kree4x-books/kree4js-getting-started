@@ -25,7 +25,7 @@ async function main () {
 
   // ── Node A（Kafka client，注册calc服务） ─────────────
   const nodeA = Kree4n.create('node-a', 'Kafka RPC server')
-  nodeA.transport.ports.useConnectionProvider(kafkaProvider)
+  nodeA.useConnectionProvider(kafkaProvider)
   nodeA.register('calc', {
     add (a, b) { return a + b },
     multiply (a, b) { return a * b }
@@ -35,7 +35,7 @@ async function main () {
 
   // ── Node B（Kafka client，注册str服务） ─────────────
   const nodeB = Kree4n.create('node-b', 'Kafka RPC client')
-  nodeB.transport.ports.useConnectionProvider(kafkaProvider)
+  nodeB.useConnectionProvider(kafkaProvider)
   nodeB.register('str', {
     echo (msg) { return `Echo: ${msg}` },
     greet (name) { return `Hello, ${name}! (via Kafka)` }
@@ -49,8 +49,9 @@ async function main () {
     await nodeB.start()
     logger.info('[nodeB] attached to Kafka (broadcast mode, topic kree4x)')
 
-    // 等待 KreeX Grid 通过 Kafka 发现完成
-    await new Promise(resolve => setTimeout(resolve, 3000))
+    // 等待KreeX Grid通过Kafka发现对方节点就绪
+    await nodeA.whenReady(nodeB, 5000)
+    await nodeB.whenReady(nodeA, 5000)
 
     // node-b 调用 node-a 的 calc 服务
     const calc = nodeB.service('calc')

@@ -1,6 +1,8 @@
 // internal
 import { ExecUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
+import { SocketioListenConnectionProvider } from '@kree4js/socketio-listen'
+import { SocketioAttachConnectionProvider } from '@kree4js/socketio-attach'
 import Kree4n from '@kree4js/kree4n'
 
 // vars
@@ -15,7 +17,9 @@ const logger = Logging.getLogger('socketio-protocol')
  *
  * 关键点：
  * - Socket.IO 提供多传输回退（WebSocket → HTTP 长轮询）和房间/事件模型
- * - kree4n 默认注册了 SocketIOListen/Attach providers，无需手动注册
+ * - Socket.IO 是第三方库，kree4n 不内置，需独立安装并手动注册 Provider：
+ *   npm install @kree4js/socketio-listen @kree4js/socketio-attach
+ * - listen/attach 两侧都要注册对应的 Connection Provider，否则 io:// 无法识别
  * - Socket.IO URL 使用 io:// 协议
  *
  * 调用流程：
@@ -25,6 +29,8 @@ const logger = Logging.getLogger('socketio-protocol')
 async function main () {
   // ── Node A（Socket.IO服务器，注册calc服务） ─────────────
   const nodeA = Kree4n.create('node-a', 'Socket.IO RPC server')
+  // SocketioListenConnectionProvider 需手动注册后才能识别 io:// 协议
+  nodeA.useConnectionProvider(new SocketioListenConnectionProvider())
   nodeA.register('calc', {
     add (a, b) { return a + b },
     multiply (a, b) { return a * b }
@@ -33,6 +39,8 @@ async function main () {
 
   // ── Node B（Socket.IO客户端，注册str服务） ─────────────
   const nodeB = Kree4n.create('node-b', 'Socket.IO RPC client')
+  // SocketioAttachConnectionProvider 需手动注册后才能识别 io:// 协议
+  nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
   nodeB.register('str', {
     echo (msg) { return `Echo: ${msg}` },
     greet (name) { return `Hello, ${name}! (via Socket.IO)` }

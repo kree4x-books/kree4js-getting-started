@@ -8,7 +8,15 @@
 
 ### 一. 概念
 
-与之前的章节不同，Kafka 不再是一个"点对点"的连接协议。节点之间**没有直接连接**，所有消息都经过 Kafka broker 中转。Kree4X 把 Kafka 当作一根"哑管道"（dumb pipe）：消息是原始的二进制帧，路由与过滤由 Kree4X 上层完成。
+**Kafka**
+
+Kafka 不是一个"点对点"的连接协议。
+
+节点之间**没有直接连接**，所有消息都经过 Kafka broker 中转。
+
+Kree4X 仅把 Kafka 作为中转数据的消息总线，使用Kafka在多个节点间可靠的转发消息。
+
+使用Kree4X的DSE(分布式EventEmitter)机制时，Kafka可作为一种可靠消息信道，保证DSE Event的最少一次到达。
 
 **对 Kafka Server 的要求**
 
@@ -16,36 +24,25 @@
 
 | 要求 | 说明 |
 |------|------|
-| Kafka 版本 | 2.x 或 3.x 均可（内部使用 kafkajs 客户端） |
+| Kafka 版本 | 2.x 或 3.x 均可 |
 | broker 地址 | 示例默认 `127.0.0.1:8092`，可按需修改为 `kafka://broker-host:port` |
 | 端口可达 | 客户端需能 TCP 访问 broker 端口 |
 | topic `kree4x` | **必须预先创建**（详见下文"topic 要求"） |
 
-**topic 要求**
+**Topic 要求**
 
-Kafka 传输默认使用 **broadcast 模式**（`topicMode: 'broadcast'`）：
+默认使用Topic：`kree4x`
 
-- 所有节点订阅同一个 topic `kree4x`，每条消息被所有节点接收，非目标节点在上层按 `dstId` 丢弃
-- 由于 `allowAutoTopicCreation` 恒为 `false`，**topic 必须在 broker 上预先创建**，否则 attach 会失败
+- 所有节点订阅 `kree4x`，消息通过此topic收发。
+- Topic 必须在 broker 上预先创建，否则 attach 会失败
 
-创建命令（以 Kafka 自带工具为例）：
+创建Topic的命令：
 
 ```bash
 kafka-topics.sh --bootstrap-server 127.0.0.1:8092 \
   --create --topic kree4x --partitions 1 --replication-factor 1
 ```
 
-适用场景：需要 1 个 topic 即可，运维简单，生产环境推荐。
-
-**可选：dynamic 模式（topicMode: 'dynamic'）**
-
-- 每个节点订阅 `kree4x-broadcast` 加上自己的私有 topic `kree4x-{nodeId}`
-- 消息直达目标节点，避免无效广播，开发测试建议
-- 该模式下 `allowAutoTopicCreation` 为 `true`，broker 需允许自动创建 topic（`auto.create.topics.enable=true`）
-
-```javascript
-node.attach('kafka://127.0.0.1:8092', { topicMode: 'dynamic' })
-```
 
 ### 二. 示例代码
 
@@ -65,7 +62,7 @@ const kafkaProvider = new KafkaAttachConnectionProvider()
 
 // ── Node A（Kafka客户端，注册calc服务） ─────────────
 const nodeA = Kree4n.create('node-a', 'Kafka RPC server')
-nodeA.transport.ports.useConnectionProvider(kafkaProvider)
+nodeA.useConnectionProvider(kafkaProvider)
 nodeA.register('calc', {
   add (a, b) { return a + b },
   multiply (a, b) { return a * b }
@@ -75,7 +72,7 @@ nodeA.attach('kafka://127.0.0.1:8092')
 
 // ── Node B（Kafka客户端，注册str服务） ─────────────
 const nodeB = Kree4n.create('node-b', 'Kafka RPC client')
-nodeB.transport.ports.useConnectionProvider(kafkaProvider)
+nodeB.useConnectionProvider(kafkaProvider)
 nodeB.register('str', {
   echo (msg) { return `Echo: ${msg}` },
   greet (name) { return `Hello, ${name}! (via Kafka)` }
@@ -101,26 +98,54 @@ const greetResult = await str.greet('World')       // "Hello, World! (via Kafka)
 
 ## 三、须强调的细节
 
-**KafkaAttachConnectionProvider 需要手动注册**
+**KafkaAttachConnectionProvider 需手动注册**
 
-kree4n 默认注册了 HTTP、TCP、UDP、Socket.IO、HTTP2 等协议，但 Kafka 需要手动引入：
+安装`@kree4js/kafka-attach`包。
+
+然后使用kree4x.useConnectionProvider()注册。
 
 ```javascript
 import { KafkaAttachConnectionProvider } from '@kree4js/kafka-attach'
-node.transport.ports.useConnectionProvider(new KafkaAttachConnectionProvider())
+node.useConnectionProvider(new KafkaAttachConnectionProvider())
 ```
 
-**attach-only，没有 listen**
+**Attach-only，没有 listen**
 
-Kafka 没有"服务端监听"的概念。所有节点都是 Kafka 的生产者/消费者（client），通过 `attach` 连接 broker，节点间通过 topic 交换消息。
+Kree4X使用Kafka时， 没有Listen模式，由Kree4X来管理Kafka Server是错误的。
 
-**broadcast 模式必须预建 topic**
+所有Kree4X节点，都是 Kafka 的生产者/消费者（client）。
 
-`allowAutoTopicCreation` 恒为 `false`，topic 不存在时 attach 会失败。务必先创建 `kree4x` topic。
+Kree4X节点通过 `attach`模式 连接 broker，节点间通过 topic 交换消息。
 
-**Grid 发现需要时间**
+**默认TopicMode：broadcast**
 
-节点启动后，KreeX 的 Grid 机制需要广播并发现对端节点，因此示例在 `start()` 后等待了约 3 秒。如果调用立刻执行，可能因节点尚未互相发现而找不到目标服务。
+使用唯一的“`kree4x`”Topic，进行broadcast消息广播。
+
+所有的Kree4X节点，都使用此topic进行数据交换。本质是一种广播模式，所有的节点都会收到数据。
+
+如果当前节点不需要处理数据，则丢弃。
+
+```
+nodeB.attach('kafka://127.0.0.1:8092', { topicMode: 'broadcast' })
+```
+
+**TopicMode：dynamic模式，**
+
+允许各个Kree4X创建自己的Kafka Topic
+
+```
+node.attach('kafka://127.0.0.1:8092', { topicMode: 'dynamic' })
+```
+
+需要Kafka Server开放“`allowAutoTopicCreation`”选项。
+
+生成环境中，此要求有些不太合理。
+
+**dynamic模式时，Grid 发现需要时间**
+
+创建topic，开始监听，数据到来。
+
+dynamic模式时，各个Kree4X节点的互相发现比较缓慢，节点启动后，如果立即进行服务调用，可能因节点尚未互相发现而找不到目标服务，而出现临时失败。
 
 ## 四、涉及到的API:
 
@@ -131,7 +156,7 @@ Kafka 没有"服务端监听"的概念。所有节点都是 Kafka 的生产者/�
  * Attaches to a remote node via the Kafka protocol.
  *
  * 使用前需在节点上注册 KafkaAttachConnectionProvider：
- * node.transport.ports.useConnectionProvider(new KafkaAttachConnectionProvider())
+ * node.useConnectionProvider(new KafkaAttachConnectionProvider())
  *
  * @param {string} url - The URL of the Kafka broker, e.g. "kafka://127.0.0.1:8092".
  * @param {{ topicMode?: 'broadcast'|'dynamic' }} [options] - The topic mode.

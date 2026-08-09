@@ -22,8 +22,7 @@ WebSocket 是建立在 TCP 之上的全双工通信协议：
 **WebSocket 在 Kree4X 中的角色**
 
 - 服务端由 `http-listen` 内置提供：监听 `http://` 端口，自动升级 `/kreex/ws` 端点
-- 客户端使用 `ws://` 协议 attach，需要手动注册 `WebSocketAttachConnectionProvider`
-- 该 Provider 不是 kree4n 默认注册的，必须显式引入
+- 客户端使用 `ws://` 协议 attach，kree4n 默认注册了 `WebSocketAttachConnectionProvider`，直接使用即可，不需要额外引入
 
 ### 二. 示例代码
 
@@ -36,7 +35,6 @@ WebSocket 是建立在 TCP 之上的全双工通信协议：
 
 ```javascript
 import Kree4n from '@kree4js/kree4n'
-import { WebSocketAttachConnectionProvider } from '@kree4js/websocket-attach'
 
 // ── Node A（WebSocket服务器，注册calc服务） ─────────────
 const nodeA = Kree4n.create('node-a', 'WebSocket RPC server')
@@ -49,8 +47,7 @@ nodeA.listen('http://127.0.0.1:8070')
 
 // ── Node B（WebSocket客户端，注册str服务） ─────────────
 const nodeB = Kree4n.create('node-b', 'WebSocket RPC client')
-// WebSocketAttachConnectionProvider 需手动注册后才能识别 ws:// 协议
-nodeB.transport.ports.useConnectionProvider(new WebSocketAttachConnectionProvider())
+// WebSocketAttachConnectionProvider 由 kree4n 默认注册，直接使用 ws:// 协议
 nodeB.register('str', {
   echo (msg) { return `Echo: ${msg}` },
   greet (name) { return `Hello, ${name}! (via WebSocket)` }
@@ -73,20 +70,30 @@ const greetResult = await str.greet('World')           // "Hello, World! (via We
 
 ### 三. 须强调的细节
 
-**WebSocketAttachConnectionProvider 需要手动注册**
+**WebSocket Attach已内建**
 
-kree4n 默认注册了 HTTP、TCP、UDP、Socket.IO、HTTP2 等协议的处理组件，但 WebSocket 需要手动引入：
+kree4n 默认注册了 HTTP、TCP、UDP、HTTP2、WebSocket 等协议的处理组件，`ws://` 协议可直接使用。
 
 ```javascript
-import { WebSocketAttachConnectionProvider } from '@kree4js/websocket-attach'
-nodeB.transport.ports.useConnectionProvider(new WebSocketAttachConnectionProvider())
+nodeB.attach('ws://127.0.0.1:8070')
 ```
 
-不注册该组件，`ws://` 协议将无法被识别，attach 会直接失败。
+**如何建立WebSocket Server**
 
-**服务端仍使用 http:// 监听**
+Kree4N內建支持WebSocketListen。
 
-WebSocket 服务端由 `http-listen` 内置提供（`/kreex/ws` 升级端点），因此监听侧使用的协议名仍然是 `http`（或加密的 `https`），只有在 **attach 侧**才使用 `ws`（或 `wss`）。
+WebSocket需要基于HTTP Server开放，所以对HTTP、WebSocket的支持是同一个`@kree4js/http-listen`插件提供的。
+
+监听侧，Listen HTTP URL即可开放WebSocket协议：
+
+- http://127.0.0.1:8080, 可以使用Attach ws://127.0.0.1:8080连接
+- https://127.0.0.1:8080, 可以使用Attach wss://127.0.0.1:8080连接
+
+**如何支持WebSocket Over TLS**
+
+对端Listen HTTPs，然后使用wss协议连接即可。
+
+例如：Attach wss://127.0.0.1:8080
 
 ### 四. 涉及到的API:
 
@@ -96,8 +103,8 @@ WebSocket 服务端由 `http-listen` 内置提供（`/kreex/ws` 升级端点）�
 /**
  * Attaches to a remote node via the WebSocket protocol.
  *
- * 使用前需在节点上注册 WebSocketAttachConnectionProvider：
- * node.transport.ports.useConnectionProvider(new WebSocketAttachConnectionProvider())
+ * WebSocketAttachConnectionProvider 已由 kree4n 默认注册，无需手动引入：
+ * node.attach('ws://127.0.0.1:8070')
  *
  * @param {string} url - The URL to attach to, e.g. "ws://127.0.0.1:8070".
  * @returns {this} The current instance for chaining.

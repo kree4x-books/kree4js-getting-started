@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>浏览器与Web服务器双向互调</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      color: #333;
+      background: #f5f5f5;
+    }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .subtitle { color: #666; margin-bottom: 24px; font-size: 14px; }
+    .panel {
+      background: #fff;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .panel h2 { font-size: 16px; margin-bottom: 12px; color: #555; }
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+    button {
+      padding: 8px 16px;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    button:hover { border-color: #4a90d9; color: #4a90d9; }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    button.primary { background: #4a90d9; color: #fff; border-color: #4a90d9; }
+    button.primary:hover { background: #3a7bc8; }
+    button.danger { color: #e74c3c; }
+    button.danger:hover { border-color: #e74c3c; }
+    #status {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+    .connected { background: #e8f5e9; color: #2e7d32; }
+    .disconnected { background: #fbe9e7; color: #c62828; }
+    .connecting { background: #fff3e0; color: #ef6c00; }
+    #log {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      border-radius: 4px;
+      padding: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    .log-success { color: #6a9955; }
+    .log-error { color: #f44747; }
+    .log-info { color: #569cd6; }
+  </style>
+</head>
+<body>
+
+  <h1>浏览器与Web服务器双向互调</h1>
+  <p class="subtitle">
+    浏览器客户端（<code>@kree4js/kree4b</code> UMD）调用 Node.js 服务器（<code>@kree4js/kree4n</code>）的远程服务，
+    传输自动协商：fetch-stream / xhr-poll / websocket。
+  </p>
+
+  <!-- 连接面板 -->
+  <div class="panel">
+    <h2>连接 <span id="status" class="disconnected">未连接</span></h2>
+    <div class="btn-row">
+      <button class="primary" id="btn-connect" onclick="doConnect()">连接服务器</button>
+      <button class="danger" id="btn-disconnect" onclick="doDisconnect()" disabled>断开连接</button>
+    </div>
+    <p style="font-size:12px;color:#888">
+      服务器地址：<code>http://localhost:9000</code>，先运行 13-browser-webserver-interop.mjs
+    </p>
+  </div>
+
+  <!-- RPC 演示面板 -->
+  <div class="panel">
+    <h2>远程调用 — calc 服务</h2>
+    <div class="btn-row">
+      <button id="btn-add" onclick="callAdd()" disabled>calc.add(10, 20)</button>
+      <button id="btn-multiply" onclick="callMultiply()" disabled>calc.multiply(6, 7)</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>远程调用 — greet 服务</h2>
+    <div class="btn-row">
+      <button id="btn-hello" onclick="callSayHello()" disabled>greet.sayHello("World")</button>
+      <button id="btn-echo" onclick="callEcho()" disabled>greet.echo({key: "value", num: 42})</button>
+    </div>
+  </div>
+
+  <!-- 日志面板 -->
+  <div class="panel">
+    <h2>输出日志</h2>
+    <div id="log">等待连接...<br></div>
+  </div>
+
+  <!-- kree4b UMD（构建后拷贝为 13-kree4b-umd.js 由服务器提供） -->
+  <script src="/kree4b.js"></script>
+
+  <script>
+    var kreex = undefined
+    var SERVER_URL = 'http://localhost:9000'
+
+    function setStatus (state) {
+      var el = document.getElementById('status')
+      el.className = state
+      el.textContent = state === 'connected' ? '已连接' : (state === 'connecting' ? '连接中' : '未连接')
+    }
+
+    function log (message, className) {
+      var el = document.getElementById('log')
+      var span = className ? '<span class="' + className + '">' + message + '</span>' : message
+      el.innerHTML += span + '<br>'
+      el.scrollTop = el.scrollHeight
+    }
+
+    function setButtons (enabled) {
+      var ids = ['btn-add', 'btn-multiply', 'btn-hello', 'btn-echo', 'btn-disconnect']
+      for (var i = 0; i < ids.length; i++) {
+        document.getElementById(ids[i]).disabled = !enabled
+      }
+      document.getElementById('btn-connect').disabled = enabled
+    }
+
+    async function doConnect () {
+      setStatus('connecting')
+      log('[连接] 创建 KreeX 实例...', 'log-info')
+      try {
+        // 创建浏览器版节点：自动注册 BinaryProtocol 与 browser-attach 等浏览器连接组件
+        kreex = Kree4B.create('browserClient', '浏览器与Web服务器双向互调')
+        log('[连接] 已创建节点，ID: ' + kreex.id, 'log-info')
+
+        // 连接服务器，传输类型由 browser-attach 自动协商
+        kreex.attach(SERVER_URL)
+        await kreex.start()
+
+        setStatus('connected')
+        setButtons(true)
+        log('[连接] 已连接到 ' + SERVER_URL, 'log-success')
+      } catch (err) {
+        setStatus('disconnected')
+        log('[连接] 失败：' + err.message, 'log-error')
+      }
+    }
+
+    async function doDisconnect () {
+      log('[断开] 停止节点…', 'log-info')
+      try {
+        if (kreex) {
+          await kreex.stop()
+          kreex = undefined
+        }
+      } catch (e) { /* 忽略清理错误 */ }
+      setStatus('disconnected')
+      setButtons(false)
+      log('[断开] 已断开连接。', 'log-info')
+    }
+
+    async function callAdd () {
+      log('[RPC] calc.add(10, 20) …', 'log-info')
+      try {
+        var service = kreex.service('calc')
+        var result = await service.add(10, 20)
+        log('[RPC] calc.add(10, 20) = ' + result, 'log-success')
+      } catch (err) {
+        log('[RPC] calc.add 失败：' + err.message, 'log-error')
+      }
+    }
+
+    async function callMultiply () {
+      log('[RPC] calc.multiply(6, 7) …', 'log-info')
+      try {
+        var service = kreex.service('calc')
+        var result = await service.multiply(6, 7)
+        log('[RPC] calc.multiply(6, 7) = ' + result, 'log-success')
+      } catch (err) {
+        log('[RPC] calc.multiply 失败：' + err.message, 'log-error')
+      }
+    }
+
+    async function callSayHello () {
+      log('[RPC] greet.sayHello("World") …', 'log-info')
+      try {
+        var service = kreex.service('greet')
+        var result = await service.sayHello('World')
+        log('[RPC] greet.sayHello("World") = "' + result + '"', 'log-success')
+      } catch (err) {
+        log('[RPC] greet.sayHello 失败：' + err.message, 'log-error')
+      }
+    }
+
+    async function callEcho () {
+      var data = { key: 'value', num: 42 }
+      log('[RPC] greet.echo({ key: "value", num: 42 }) …', 'log-info')
+      try {
+        var service = kreex.service('greet')
+        var result = await service.echo(data)
+        log('[RPC] greet.echo(...) = ' + JSON.stringify(result), 'log-success')
+      } catch (err) {
+        log('[RPC] greet.echo 失败：' + err.message, 'log-error')
+      }
+    }
+  </script>
+</body>
+</html>
