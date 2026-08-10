@@ -8,7 +8,7 @@
 
 ### 一. 概念
 
-**Socket.IO 协议**
+**1. Socket.IO 协议**
 
 Socket.IO 是一个基于 WebSocket 构建的实时通信库，并内置多传输回退机制：
 
@@ -19,7 +19,7 @@ Socket.IO 是一个基于 WebSocket 构建的实时通信库，并内置多传�
 
 与裸 WebSocket 相比，Socket.IO 牺牲部分性能换取更高的连接可靠性和广播能力。
 
-**Socket.IO 在 Kree4X 中的角色**
+**2. Socket.IO 在 Kree4X 中的角色**
 
 Socket.IO 是第三方库，代码体积较大，不适合内建于 kree4n。
 
@@ -83,7 +83,7 @@ const greetResult = await str.greet('World')           // "Hello, World! (via So
 
 ### 三. 须强调的细节
 
-**需要手动安装并注册**
+**1. 需要手动安装并注册**
 
 Socket.IO 是第三方库，体积较大，kree4n 不内置。使用前需要：
 
@@ -100,13 +100,13 @@ nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
 
 不注册对应组件，`io://` 协议将无法被识别，listen/attach 会直接失败。
 
-**传输回退**
+**2. 传输回退**
 
 Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网络中 WebSocket 被防火墙拦截的环境下，这一机制能保证连接依然可用。
 
 ### 四. 涉及到的API:
 
-**Socket.IO监听**
+**1. Socket.IO监听**
 
 ```typescript
 /**
@@ -121,7 +121,7 @@ Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网
 node.listen(url: string): this
 ```
 
-**Socket.IO连接**
+**2. Socket.IO连接**
 
 ```typescript
 /**

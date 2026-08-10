@@ -8,7 +8,7 @@
 
 ### 一. 概念
 
-**WebSocket 协议**
+**1. WebSocket 协议**
 
 WebSocket 是建立在 TCP 之上的全双工通信协议：
 
@@ -19,7 +19,7 @@ WebSocket 是建立在 TCP 之上的全双工通信协议：
 
 与 HTTP 的短连接 / 轮询相比，WebSocket 消除了请求-响应的一来一回开销，延迟更低，适合高频双向调用。
 
-**WebSocket 在 Kree4X 中的角色**
+**2. WebSocket 在 Kree4X 中的角色**
 
 - 服务端由 `http-listen` 内置提供：监听 `http://` 端口，自动升级 `/kreex/ws` 端点
 - 客户端使用 `ws://` 协议 attach，kree4n 默认注册了 `WebSocketAttachConnectionProvider`，直接使用即可，不需要额外引入
@@ -70,7 +70,7 @@ const greetResult = await str.greet('World')           // "Hello, World! (via We
 
 ### 三. 须强调的细节
 
-**WebSocket Attach已内建**
+**1. WebSocket Attach已内建**
 
 kree4n 默认注册了 HTTP、TCP、UDP、HTTP2、WebSocket 等协议的处理组件，`ws://` 协议可直接使用。
 
@@ -78,7 +78,7 @@ kree4n 默认注册了 HTTP、TCP、UDP、HTTP2、WebSocket 等协议的处理�
 nodeB.attach('ws://127.0.0.1:8070')
 ```
 
-**如何建立WebSocket Server**
+**2. 如何建立WebSocket Server**
 
 Kree4N內建支持WebSocketListen。
 
@@ -89,7 +89,7 @@ WebSocket需要基于HTTP Server开放，所以对HTTP、WebSocket的支持是�
 - http://127.0.0.1:8080, 可以使用Attach ws://127.0.0.1:8080连接
 - https://127.0.0.1:8080, 可以使用Attach wss://127.0.0.1:8080连接
 
-**如何支持WebSocket Over TLS**
+**3. 如何支持WebSocket Over TLS**
 
 对端Listen HTTPs，然后使用wss协议连接即可。
 
@@ -97,7 +97,7 @@ WebSocket需要基于HTTP Server开放，所以对HTTP、WebSocket的支持是�
 
 ### 四. 涉及到的API:
 
-**WebSocket连接**
+**1. WebSocket连接**
 
 ```typescript
 /**

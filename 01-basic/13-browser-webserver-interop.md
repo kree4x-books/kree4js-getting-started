@@ -8,17 +8,17 @@
 
 ### 一. 概念
 
-**Kree4B**
+**1. Kree4B**
 
 “@kree4js/kree4b”，是For Browser实现。
 
-**Kree4N（Web服务器角色）**
+**2. Kree4N（Web服务器角色）**
 
 使用http-listen：
 
 - Listen模式监听 `http://` 端口，或者`https://`
 
-**浏览器信道**
+**3. 浏览器信道**
 
 http-listen 提供三种受浏览器支持的信道，browser-attach 会自动协商最佳信道：
 
@@ -79,11 +79,11 @@ await node.start()
 
 ### 三. 须强调的细节
 
-**Kree4B是纯客户端**
+**1. Kree4B是纯客户端**
 
 浏览器无法Listen端口，浏览器节点不提供任何 Listen 能力。
 
-**静态文件与RPC共用端口**
+**2. 静态文件与RPC共用端口**
 
 借助http-listen的 `httpServer` 选项，可以把自定义静态文件路由与Kree4X的RPC路由放在同一个HTTP服务器上：
 
@@ -94,7 +94,7 @@ httpServer.on('request', (req, res) => { /* 静态文件 */ })
 node.listen('http://0.0.0.0:9000', { httpServer })
 ```
 
-**UMD构建**
+**3. UMD构建**
 
 kree4b 的 npm 包自带 UMD 构建产物（`dist/umd/prod/index.js`），`<script>` 直接可用，无需自行打包：
 
@@ -106,7 +106,7 @@ npm install @kree4js/kree4b
 
 浏览器加载`/kree4b.js` 后，暴露全局变量 `Kree4B`。
 
-**Nginx 反向代理部署（生产环境）**
+**4. Nginx 反向代理部署（生产环境）**
 
 本地示例使用 NodeJS创建HTTP Server，同时开放静态文件与Kree4N服务。
 
@@ -129,7 +129,7 @@ kree4x 暴露的端点由 http-listen 在 `/kreex/` 前缀下注册：
 
 ### 四. 涉及到的API:
 
-**创建浏览器节点**
+**1. 创建浏览器节点**
 
 ```javascript
 Kree4B.create(name: string, description: string, options?: {
@@ -137,7 +137,7 @@ Kree4B.create(name: string, description: string, options?: {
 }): KreeX
 ```
 
-**浏览器连接**
+**2. 浏览器连接**
 
 ```javascript
 kreex.attach(url: string): this

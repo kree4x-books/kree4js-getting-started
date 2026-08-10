@@ -14,19 +14,19 @@ Tracing是为AI而进行的特异化设计。
 
 ### 一. 概念
 
-**Tracing**
+**1. Tracing**
 
 Kree4X的Tracing，以单次服务调用为粒度，自动追踪Caller与Callee之间的全栈调用及通信过程，形成完整的、包含主时间线、多分支时间线的完整全链路追踪信息。
 
 详情参考：[追踪：KreeX Tracing](https://zhuanlan.zhihu.com/p/2036394167438415089)
 
-**时间事件: Time-based Action Event**
+**2. 时间事件: Time-based Action Event**
 
 一个时间事件，其实质是一次函数或对象方法调用中，某个时间节点的现场快照，它记录了现场某个切面的瞬时状态。
 
 详见：[时间事件: Time-based Action Event](https://zhuanlan.zhihu.com/p/2037090603226361964)
 
-**时间线：Timeline**
+**3. 时间线：Timeline**
 
 时间线Timeline，是指TimeEvent按照时间戳顺序排列、连接所形成的有向序列。
 
@@ -92,7 +92,7 @@ tracer.output(new Trace.SvgFormatter(), new FileWriter('./tmp', '.svg'), Trace.O
 
 ### 三. 须强调的细节
 
-**输出的svg是可以交互的**
+**1. 输出的svg是可以交互的**
 
 鼠标移动到一个Action上，会显示一个Action的概要信息。
 
@@ -102,7 +102,7 @@ tracer.output(new Trace.SvgFormatter(), new FileWriter('./tmp', '.svg'), Trace.O
 
 ……
 
-**业务方法内部如何Tracing？**
+**2. 业务方法内部如何Tracing？**
 
 注意calc.add(a,b,ctx)，最后一个ctx参数。
 
@@ -112,17 +112,17 @@ Callee端，方法被调用时，框架会自动注入一个Context参数。
 
 业务操作的Tracing，会被自动融合到整个完整的调用时间线中。
 
-**默认全局关闭**
+**3. 默认全局关闭**
 
 全局尺度，tracing默认是关闭的。
 
 全局、全量Tracing，性能、资源消耗角度，都是不可承受之重。
 
-**以服务存根单次调用为控制粒度**
+**4. 以服务存根单次调用为控制粒度**
 
 服务存根手工traceEnabled = true后，后续调用会自动记录Tracing。
 
-**没开启Tracing，调用出错时怎么记录？**
+**5. 没开启Tracing，调用出错时怎么记录？**
 
 Kree4X內建“自动重试、自动Tracing”机制。
 
@@ -130,7 +130,7 @@ Kree4X內建“自动重试、自动Tracing”机制。
 
 中级篇，在“**重试策略**”章节，会完整讲解整个过程。
 
-**Tracing时间线输出格式**
+**6. Tracing时间线输出格式**
 
 示例中，使用的是SvgFormatter，输出为svg可交互矢量图格式。
 
@@ -142,7 +142,7 @@ Kree4X內建“自动重试、自动Tracing”机制。
 
 ### 四. 涉及到的API:
 
-**开启Tracing traceEnabled**
+**1. 开启Tracing traceEnabled**
 
 在服务存根上设置 `traceEnabled = true`，该服务的所有后续调用都会被追踪。
 
@@ -154,7 +154,7 @@ Kree4X內建“自动重试、自动Tracing”机制。
 ServiceStub.traceEnabled: boolean
 ```
 
-**获取最后一个Tracer lastTracer**
+**2. 获取最后一个Tracer lastTracer**
 
 调用完成后，通过服务存根的 `lastTracer` 获取本次调用的Tracer对象。
 
@@ -166,7 +166,7 @@ ServiceStub.traceEnabled: boolean
 ServiceStub.lastTracer: Tracer
 ```
 
-**在服务实现中获取Tracer ctx.tracer**
+**3. 在服务实现中获取Tracer ctx.tracer**
 
 服务方法的最后一个参数 `ctx` 包含 `tracer`，可通过 `tracer.phase()` 获取TracePhase。
 
@@ -178,7 +178,7 @@ ServiceStub.lastTracer: Tracer
 ctx.tracer: Tracer
 ```
 
-**创建TracePhase tracer.phase()**
+**4. 创建TracePhase tracer.phase()**
 
 创建一个TracePhase，提供tracing的逻辑分段。
 
@@ -191,7 +191,7 @@ ctx.tracer: Tracer
 phase(name): TracePhase
 ```
 
-**记录追踪事件 phase.trace()**
+**5. 记录追踪事件 phase.trace()**
 
 在当前Tracer的时间线上追加一个时间事件。
 
@@ -207,7 +207,7 @@ phase(name): TracePhase
 phase.trace(summary: string, actor: any, action: string, ...args: any[]): TimeEvent
 ```
 
-**输出Tracing时间线 tracer.output()**
+**6. 输出Tracing时间线 tracer.output()**
 
 将Tracer的时间线格式化并输出。
 

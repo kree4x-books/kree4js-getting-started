@@ -17,11 +17,11 @@
 
 简短版，如下。
 
-**DSE**
+**1. DSE**
 
 DSE = Distributed Service Events，分布式服务事件。
 
-**解决什么问题？**
+**2. 解决什么问题？**
 
 1. 把 Node.js 的 `EventEmitter`（事件发射器）开放为远程服务
 2. 广播式通知场景：一个服务向多个订阅者推送同一事件，订阅者各自处理，互不影响。
@@ -32,8 +32,8 @@ DSE = Distributed Service Events，分布式服务事件。
 
 在下边的示例中，我们将：
 
-- nodeA：新闻直播间，注册 `newsService`（一个 EventEmitter）作为服务，往里面发新闻
-- nodeB：新闻订阅者，获得 nodeA 直播间的"远程话筒"，`on('news', ...)` 收新闻
+- nodeA：新闻直播间，开放 `newsService`（一个 EventEmitter）作为服务，基于此发布新闻消息
+- nodeB：新闻订阅者，获得 nodeA `newsService`的本地透明服务存根后，`on('news', ...)` 订阅新闻消息
 
 ```javascript
 // internal
@@ -57,25 +57,42 @@ import Kree4n from '@kree4js/kree4n'
 
   // nodeA广播
   newsroom.emit('news', { headline: 'Kree4JS 发布 1.0 版本' })
+
   // NodeB驱动NodeA广播
   newsProxy.emit('news', { headline: '分布式事件订阅指南上线' })
 ```
 
 ### 三. 须强调的细节
 
-**用事件"广播"，而非用 callback"通知"**
+**1. 哪些EventEmitter可以开放为服务？**
+
+NodeJS原生EventEmitter，支持。
+
+@kree4js/commons-events的EventEmitter，NodeJS和**浏览器端**都可用。
+
+详情参阅：[零零碎碎的稀奇古怪之EventEmitter：支持Owner分组管理](https://zhuanlan.zhihu.com/p/2037107293641232612)
+
+其他第三方，必须兼容”NodeJS原生EventEmitter“，才可被开放为服务，否则不保证工作正常。
+
+**2. 开放为服务后，哪些方法在远程可用？**
+
+官方支持：'on', 'emit', 'off'，各种EventEmitter的最小集。
+
+其他的方法，可能可用，但无任何保证。
+
+**3. 订阅广播“事件”，多次接收"通知"**
 
 DSE 的事件是**广播**：发布者 `emit` 一次，所有已订阅的订阅者都能收到。
 
 发布者不需要知道有多少订阅者。
 
-**事件订阅是"持久"的**
+**4. 事件订阅是"持久"的**
 
 DSC 回调是一次性的，投递后自动注销。
 
 DSE 订阅是持久的：`on()` 订阅后，发布者**任意多次** `emit` 同一事件对方都能收到，直到显式 `off()`。
 
-**用 `eventService()` 拿远程服务**
+**5. 用 `eventService()` 获取透明服务存根**
 
 普通服务用 `node.service(name)`获取存根。
 
@@ -85,19 +102,27 @@ DSE 事件服务使用 `node.eventService(name)` 获取服务存根。
 
 原因：DSE存根内部实现与普通ServiceStub有很大不同(状态保持、故障恢复……)，不得不引入一个独立实现。
 
-**订阅端无需感知发布端状态**
+**6. 发布者不关心订阅者状态**
 
 发布端 `emit` 时订阅端是否在线、订阅者对消息如何处理，发布端不关心。
 
-**订阅回调的执行策略：Fail-Fast与Fire-And-Forget**
+**7. 执行策略：Fail-Fast与Fire-And-Forget**
 
-默认的订阅Callback策略是：Fire-And-Forget，通知订阅者，不关心订阅者是否收到、回调是否成功，不触发“**error**”事件。
+“Fire-And-Forget”：默认的订阅Callback执行策略。
 
-Fail-Fast：同步失败，阻止后续；异步回调，用 Promise.all 统一执行，失败触发 “**error**”事件
+发布者，不关心订阅者是否收到、回调是否成功。
+
+回调失败，不触发“**error**”事件。
+
+Fail-Fast
+
+同步的回调失败，阻止后续回调；异步的回调，使用 Promise.all 统一执行。
+
+回调失败，触发 “**error**”事件
 
 ### 四. 涉及到的API
 
-**为Kree4X节点注入DSE 能力**
+**1. 为Kree4X节点注入DSE 能力**
 
 ```javascript
 enable(kreex)
@@ -107,7 +132,7 @@ enableDse(kreex)
 - 入参 `kreex`：由运行时层（kree4n 或 kree4b）创建的 KreeX 实例
 - 返回：开启 DSE 能力的同一 KreeX 实例（原地增强，幂等）
 
-**注册EventEmitter服务**
+**2. 注册EventEmitter服务**
 
 ```typescript
 /**
@@ -125,7 +150,7 @@ register(serviceName, eventEmitter, serviceOption?)
 
 - 取值：`'fire-and-forget'`（默认）或 `'fail-fast'`
 
-**注册事件服务的语法糖（fireAndForget / failFast）**
+**3. 注册事件服务的语法糖（fireAndForget / failFast）**
 
 ```typescript
 // 与 register() 等价，但固定了 callback 策略：
@@ -151,7 +176,7 @@ failFast(serviceName, emitter, serviceOption?)
   - `fire-and-forget`：发布端不感知订阅端失败——同步/异步失败仅记录日志，不触发 `error` 事件，也不影响其他监听器
   - `fail-fast`：监听器同步失败即中止本次发布并触发 `error` 事件；异步失败汇总后同样触发 `error` 事件
 
-**获取服务存根，订阅事件**
+**4. 获取服务存根，订阅事件**
 
 ```typescript
 // 订阅端：获取远程 EventEmitter 代理，on() 订阅
@@ -161,7 +186,7 @@ proxy.on('news', (payload) => { ... })
 
 - `on` 的回调在**订阅端本地**执行，收到的是发布端 `emit` 时序列化的 payload 副本
 
-**emit事件**
+**5. emit事件**
 
 ```typescript
 // 发布端

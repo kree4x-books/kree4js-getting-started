@@ -8,7 +8,7 @@
 
 ### 一. 概念
 
-**网点：NetPoint**
+**1. 网点：NetPoint**
 
 传统的URL无法给定一个服务节点的地址；Net Point，才可以定义一个服务节点 。
 
@@ -20,7 +20,7 @@ Kree4X中，所有服务节点都是对等的，没有Client与Server之分。
 
 详细概念，参见[网点：Net Point](https://zhuanlan.zhihu.com/p/2033268200566170768)
 
-**连接: Connection**
+**2. 连接: Connection**
 
 Open一个NetPoint就得到一个连接。
 
@@ -30,7 +30,7 @@ Open一个NetPoint就得到一个连接。
 
 一个节点，也可以**Attach**一个远程主机的端口，主动连接服务端。
 
-**通信协议**
+**3. 通信协议**
 
 Kree4N，默认内置支持多种通信协议：
 
@@ -76,7 +76,7 @@ await nodeA.whenReady(nodeB, 5_000)// 5s超时
 
 ### 三. 须强调的细节
 
-**启动顺序**
+**1. 启动顺序**
 
 启动顺序，不重要。
 
@@ -84,7 +84,7 @@ await nodeA.whenReady(nodeB, 5_000)// 5s超时
 
 不过，Listen节点先启动，Attach节点后启动，可以避免无谓的重试耗时。
 
-**如何支持其他通信协议**
+**2. 如何支持其他通信协议**
 
 简单替换下url中的protocol即可。
 
@@ -104,7 +104,7 @@ nodeB.attach('http2://127.0.0.1:8083') // Attach HTTP2
 nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 ```
 
-**whenReady是必须的么？**
+**3. whenReady是必须的么？**
 
 不是。
 
@@ -122,7 +122,7 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 
 ### **四. 涉及到的API**
 
-**listen一个URL**
+**1. listen一个URL**
 
 向Kree4X节点加入一个Listen模式的网点NetPoint。
 
@@ -139,7 +139,7 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 listen(url, options?): this;
 ```
 
-**Attach一个URL**
+**2. Attach一个URL**
 
 向Kree4X节点加入一个Attach模式的网点NetPoint。
 
@@ -156,7 +156,7 @@ listen(url, options?): this;
 attach(url, options?): this;
 ```
 
-**启动一个节点**
+**3. 启动一个节点**
 
 ```typescript
 /**
@@ -168,7 +168,7 @@ attach(url, options?): this;
 start(timeout?: number): Promise<void>;
 ```
 
-**停止一个节点**
+**4. 停止一个节点**
 
 ```typescript
 /**

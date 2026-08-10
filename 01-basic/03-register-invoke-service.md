@@ -8,7 +8,7 @@
 
 ### 一. 概念
 
-**被调用者：Callee**
+**1. 被调用者：Callee**
 
 Callee，被调用者，是一个动态的概念。
 
@@ -18,19 +18,19 @@ Callee，被调用者，是一个动态的概念。
 
 如果一个服务节点开放了服务，在服务被调用的过程中，这个服务节点是"被调用者"，它就是Callee。
 
-**调用者：Caller**
+**2. 调用者：Caller**
 
 Caller与Callee是相对的，同样是一个动态的概念。
 
 如果一个服务节点发起了一次服务调用，那么这个服务节点就是"调用者"，它就是Caller。
 
-**服务：Service**
+**3. 服务：Service**
 
 服务可以是一个函数、一个普通对象、一个类实例、或者就是类构造子本身。
 
 将一个服务注入服务节点，则可以被远程其他节点调用。
 
-**服务注册： Service Register**
+**4. 服务注册： Service Register**
 
 调用一个服务节点的register(name, impl)方法，可以将一个服务注册到服务节点中。
 
@@ -38,7 +38,7 @@ Caller与Callee是相对的，同样是一个动态的概念。
 
 一个服务注册后，可以通过任何一种节点支持的通信协议被透明调用。
 
-**服务存根: Service Stub**
+**5. 服务存根: Service Stub**
 
 服务存根，实际是一个基于ServiceCluster实例的ES6 Proxy。
 
@@ -48,7 +48,7 @@ Caller与Callee是相对的，同样是一个动态的概念。
 
 透过服务存根，可以发起服务调用，设定服务发现、选择、结果合并的策略，设置服务调用的超时时间、重试策略等。
 
-**服务调用：Service Call**
+**6. 服务调用：Service Call**
 
 远程服务开放的任何方法，通过服务存根，都可以透明调用。
 
@@ -95,7 +95,7 @@ const result = await calc.add(10, 20)
 
 ### 三. 须强调的细节
 
-**三种注册方式**
+**1. 三种注册方式**
 
 ```javascript
 // 1. 普通对象式服务
@@ -108,15 +108,15 @@ callee.register('greeter', new Greeter())
 callee.registerClass('space.greeter', Greeter)
 ```
 
-**服务命名**
+**2. 服务命名**
 
 服务名可自由定义（如 `calc`、`greeter`、`space.greeter`），无格式要求。
 
-**同步与异步**
+**3. 同步与异步**
 
 服务调用，一定是async，异步的。
 
-**远程调用不能假装语义透明**
+**4. 远程调用不能假装语义透明**
 
 Waldo在《A Note on Distributed Computing》中早已指出：远程调用不能假装语义透明。
 
@@ -135,7 +135,7 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 
 ### 四. 涉及到的API
 
-**注册服务 register()**
+**1. 注册服务 register()**
 
 将一个服务实现注册到Kree4X节点。
 
@@ -151,7 +151,7 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 register(serviceName, serviceImpl, serviceOption?): Service
 ```
 
-**注册类服务 registerClass()**
+**2. 注册类服务 registerClass()**
 
 将一个类构造函数注册为服务，每次调用新建实例。
 
@@ -167,7 +167,7 @@ register(serviceName, serviceImpl, serviceOption?): Service
 registerClass(serviceName, serviceImpl, serviceOption?): Service
 ```
 
-**获取服务存根 service()**
+**3. 获取服务存根 service()**
 
 获取一个服务的透明代理（ServiceCluster），用于发起远程调用。
 

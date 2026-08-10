@@ -12,17 +12,17 @@
 
 ### 一. 概念
 
-**服务节点**
+**1. 服务节点**
 
 所谓服务节点，就是一个Kree4X实例。
 
-**节点标识**
+**2. 节点标识**
 
 一个服务节点，有其全局唯一的节点标识。
 
 节点标识，是一个ULID，有Kree4X动态创建，内部分配，不能由外部设定。
 
-**节点名称**
+**3. 节点名称**
 
 节点名称，是一个服务节点的人类可读的名称。
 
@@ -30,7 +30,7 @@
 
 可能重复，节点名称由人类设定，不保证唯一性。
 
-**节点描述**
+**4. 节点描述**
 
 节点详细的文字描述。
 
@@ -70,7 +70,7 @@ const node2 = Kree4n.create("node-2", "A demo node");
 
 ### 三. 须强调的细节
 
-**Kree4N**
+**1. Kree4N**
 
 “@kree4js/kree4n”，是For NodeJS实现。
 
@@ -78,7 +78,7 @@ const node2 = Kree4n.create("node-2", "A demo node");
 
 服务器，使用这个版本。
 
-**Kree4B**
+**2. Kree4B**
 
 “@kree4js/kree4b”，是For Browser实现
 
@@ -86,7 +86,7 @@ const node2 = Kree4n.create("node-2", "A demo node");
 
 Web客户端，使用这个版本。
 
-**Kree4JS**
+**3. Kree4JS**
 
 "@kree4js/@kree4js"，是面向Javascript的通用版本，不包含任何平台特异的代码。
 
@@ -98,7 +98,7 @@ Web客户端，使用这个版本。
 
 ### 四. 涉及到的API
 
-**创建Kree4N实例Kree4n.create()**
+**1. 创建Kree4N实例Kree4n.create()**
 
 创建一个Kree4X实例，并注入Kree4N插件
 

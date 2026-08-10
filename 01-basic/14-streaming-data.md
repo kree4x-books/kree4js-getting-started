@@ -8,12 +8,12 @@
 
 ### 一. 概念
 
-**为什么需要流式？**
+**1. 为什么需要流式？**
 
 - 一次序列化数十M、上G的数据，是取死之道
 - 真正的流式数据源，在收到结束标记前，可能不知道数据大小。
 
-**Streaming 在 Kree4X 中的形态**
+**2. Streaming 在 Kree4X 中的形态**
 
 - **默认关闭**：kree4n 默认不启用流式传输。创建节点时需要显式开启：
 
@@ -78,14 +78,14 @@ const fileReader = await streamSvc.download()
 
 ### 三. 须强调的细节
 
-**必须显式开启流式**
+**1. 必须显式开启流式**
 
 **Why**：流式传输在RPC场景下，不是常见需求。防止你的磁盘，被临时文件占满(上传文件一定要mv临时文件)。
 
 - 流式默认关闭。创建节点时不传 `transport.streaming.enable = true`（或传 false），流参数/流结果会被当作普通值处理而失败。
 - 建议调用方与被调方**两侧**都开启。
 
-**如何告知Kree4X参数、返回值是Stream？**
+**2. 如何告知Kree4X参数、返回值是Stream？**
 
 当参数、返回值是`StreamReader`类型时，触发流式处理。
 
@@ -104,7 +104,7 @@ StreamReader列表如下：
 
 ### 四. 涉及到的API:
 
-**创建节点时开启流式（create options）**
+**1. 创建节点时开启流式（create options）**
 
 ```typescript
 /**
@@ -133,7 +133,7 @@ StreamReader列表如下：
 Kree4n.create(name: string, description?: string, options?: CreateOptions)
 ```
 
-**流读取器（StreamReader）**
+**2. 流读取器（StreamReader）**
 
 `StreamReader` 是流式数据的数据类型 / 流式指示标记，实现 `AsyncIterable`，逐块产出 `Uint8Array`。
 
@@ -170,7 +170,7 @@ import Kree4js from '@kree4js/kree4js'
 const { StreamReader, GenericStreamReader } = Kree4js.Transports.Streaming
 ```
 
-**流式调用形态**
+**3. 流式调用形态**
 
 ```typescript
 // 参数：传入 StreamReader

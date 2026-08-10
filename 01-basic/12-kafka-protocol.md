@@ -8,7 +8,7 @@
 
 ### 一. 概念
 
-**Kafka**
+**1. Kafka**
 
 Kafka 不是一个"点对点"的连接协议。
 
@@ -18,7 +18,7 @@ Kree4X 仅把 Kafka 作为中转数据的消息总线，使用Kafka在多个节�
 
 使用Kree4X的DSE(分布式EventEmitter)机制时，Kafka可作为一种可靠消息信道，保证DSE Event的最少一次到达。
 
-**对 Kafka Server 的要求**
+**2. 对 Kafka Server 的要求**
 
 **使用本示例前，需要一个可用的 Kafka broker**（示例本身只作为客户端连接，不内嵌、不启动 Kafka）：
 
@@ -29,7 +29,7 @@ Kree4X 仅把 Kafka 作为中转数据的消息总线，使用Kafka在多个节�
 | 端口可达 | 客户端需能 TCP 访问 broker 端口 |
 | topic `kree4x` | **必须预先创建**（详见下文"topic 要求"） |
 
-**Topic 要求**
+**3. Topic 要求**
 
 默认使用Topic：`kree4x`
 
@@ -99,7 +99,7 @@ const greetResult = await str.greet('World')       // "Hello, World! (via Kafka)
 
 ## 三、须强调的细节
 
-**KafkaAttachConnectionProvider 需手动注册**
+**1. KafkaAttachConnectionProvider 需手动注册**
 
 安装`@kree4js/kafka-attach`包。
 
@@ -110,7 +110,7 @@ import { KafkaAttachConnectionProvider } from '@kree4js/kafka-attach'
 node.useConnectionProvider(new KafkaAttachConnectionProvider())
 ```
 
-**Attach-only，没有 listen**
+**2. Attach-only，没有 listen**
 
 Kree4X使用Kafka时， 没有Listen模式，由Kree4X来管理Kafka Server是错误的。
 
@@ -118,7 +118,7 @@ Kree4X使用Kafka时， 没有Listen模式，由Kree4X来管理Kafka Server是�
 
 Kree4X节点通过 `attach`模式 连接 broker，节点间通过 topic 交换消息。
 
-**默认TopicMode：broadcast**
+**3. 默认TopicMode：broadcast**
 
 使用唯一的“`kree4x`”Topic，进行broadcast消息广播。
 
@@ -130,7 +130,7 @@ Kree4X节点通过 `attach`模式 连接 broker，节点间通过 topic 交换�
 nodeB.attach('kafka://127.0.0.1:8092', { topicMode: 'broadcast' })
 ```
 
-**TopicMode：dynamic模式，**
+**4. TopicMode：dynamic模式，**
 
 允许各个Kree4X创建自己的Kafka Topic
 
@@ -142,7 +142,7 @@ node.attach('kafka://127.0.0.1:8092', { topicMode: 'dynamic' })
 
 生成环境中，此要求有些不太合理。
 
-**dynamic模式时，Grid 发现需要时间**
+**5. dynamic模式时，Grid 发现需要时间**
 
 创建topic，开始监听，数据到来。
 
@@ -150,7 +150,7 @@ dynamic模式时，各个Kree4X节点的互相发现比较缓慢，节点启动�
 
 ## 四、涉及到的API:
 
-**Kafka连接**
+**1. Kafka连接**
 
 ```typescript
 /**

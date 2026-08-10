@@ -8,11 +8,11 @@
 
 ### 一. 概念
 
-**HTTP协议**
+**1. HTTP协议**
 
 HTTP（HyperText Transfer Protocol）是最通用的网络协议，天然穿透防火墙和NAT，无需额外端口开放。
 
-**listen/attach**
+**2. listen/attach**
 
 - `listen`：创建HTTP服务器，监听端口，等待客户端连接
 - `attach`：以HTTP客户端身份连接到服务器
@@ -22,7 +22,7 @@ HTTP（HyperText Transfer Protocol）是最通用的网络协议，天然穿透�
 - 提供服务的节点调用 `listen('http://...')`，创建HTTP服务器
 - 调用服务的节点调用 `attach('http://...')`，连接服务器
 
-**双向互调**
+**3. 双向互调**
 
 HTTP连接建立后，两端节点均可注册服务，也可调用对方的服务，实现双向RPC。
 
@@ -76,7 +76,7 @@ const greetResult = await str.greet('World')
 
 ### 三. 须强调的细节
 
-**在使用node:http和node:https**
+**1. 在使用node:http和node:https**
 
 Kree4N内部使用了两个插件：`@kree4js/http-listen`和`@kree4js/http-attach`。
 
@@ -86,17 +86,17 @@ NodeJS的http/https包，在建立连接后，是可以keep-alive，并且支持
 
 ”双向流式通信“，这一点有点意外，接受就好。
 
-**HTTP连接是持久连接**
+**2. HTTP连接是持久连接**
 
 `http-attach` 内部使用HTTP持久连接（keep-alive），复用同一连接完成多次RPC调用，避免每次调用都建立新连接的开销。
 
-**NodJS HTTP不是mono-frame的**
+**3. NodJS HTTP不是mono-frame的**
 
 NodeJS HTTP协议下，使用流式通信，如果每次发送一个完整的帧，不能保证对端收到时完整的。
 
 存在拖帧、粘帧问题，Kree4X在Transport层需要帧重组。
 
-**双向互调能力**
+**4. 双向互调能力**
 
 连接建立后，两端是对等的：
 
@@ -108,7 +108,7 @@ NodeJS HTTP协议下，使用流式通信，如果每次发送一个完整的帧
 
 ### 四. 涉及到的API:
 
-**HTTP监听**
+**1. HTTP监听**
 
 ```typescript
 /**
@@ -120,7 +120,7 @@ NodeJS HTTP协议下，使用流式通信，如果每次发送一个完整的帧
 node.listen(url: string, options?: ConnectionOptions): this
 ```
 
-**HTTP连接**
+**2. HTTP连接**
 
 ```typescript
 /**

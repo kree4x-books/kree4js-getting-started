@@ -8,13 +8,13 @@
 
 ### 一. 概念
 
-**星型拓扑（Hub-Leaf）**
+**1. 星型拓扑（Hub-Leaf）**
 
 在星型拓扑中，所有外围节点（Leaf）只与中心节点（Hub）直连，外围节点之间无法直连。
 
 消息流向：`Leaf → Hub → Leaf`
 
-**间接调用**
+**2. 间接调用**
 
 当两个Leaf节点无法直连时，可以通过Hub节点转发消息，实现间接服务调用。
 
@@ -59,7 +59,7 @@ const result = await greet.hello('World')
 
 ### 三. 须强调的细节
 
-**关于拓扑结构**
+**1. 关于拓扑结构**
 
 拓扑结构，一点都不重要。
 
@@ -73,7 +73,7 @@ const result = await greet.hello('World')
 
 详情，参考：[通信网格：Net Grid](https://zhuanlan.zhihu.com/p/2034950270879318909)
 
-**proxyMode**
+**2. proxyMode**
 
 在Hub节点创建时设置 `transport: { proxyMode: true }`，开启消息转发模式。
 
@@ -85,7 +85,7 @@ const result = await greet.hello('World')
 
 详情，参考：[数据帧中继：DataFrame Forwarding](https://zhuanlan.zhihu.com/p/2036008614192735404)
 
-**转发策略（ForwardPolicy）**
+**3. 转发策略（ForwardPolicy）**
 
 系统提供了API，允许定制数据转发策略。
 
@@ -95,7 +95,7 @@ const result = await greet.hello('World')
 
 ### 四. 涉及到的API:
 
-**创建带转发模式的节点**
+**1. 创建带转发模式的节点**
 
 ```typescript
 /**

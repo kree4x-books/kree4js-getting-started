@@ -8,13 +8,13 @@
 
 ### 一. 概念
 
-**对等节点（Peer）**
+**1. 对等节点（Peer）**
 
 Kree4X中，所有节点都是对等的，没有严格的Client与Server之分。
 
 listen/attach只是连接建立的方向不同，连接建立后，任意一方都可以注册和调用服务。
 
-**双向注册**
+**2. 双向注册**
 
 两个节点各自注册自己的服务，两个节点都可以调用对方的服务。
 
@@ -64,13 +64,13 @@ const aInfo = await nodeB.service('identifier').whoAreYou()
 
 ### 三. 须强调的细节
 
-**对等性**
+**1. 对等性**
 
 两个节点角色完全一样：都可以注册服务，都可以调用对方的服务。
 
 listen/attach只是连接建立的方向不同，连接建立后，双方完全对等。
 
-**服务名相同，实现不同**
+**2. 服务名相同，实现不同**
 
 两个节点注册了同名的identifier服务，但各自的实现不同（返回自己的name和id）。
 
@@ -78,7 +78,7 @@ listen/attach只是连接建立的方向不同，连接建立后，双方完全�
 
 ### 四. 涉及到的API:
 
-**注册服务 register()**
+**1. 注册服务 register()**
 
 将一个服务实现注册到Kree4X节点。
 
@@ -93,7 +93,7 @@ listen/attach只是连接建立的方向不同，连接建立后，双方完全�
 register(serviceName, serviceImpl): Service
 ```
 
-**获取服务存根 service()**
+**2. 获取服务存根 service()**
 
 获取一个服务的透明代理（ServiceCluster），用于发起远程调用。
 
