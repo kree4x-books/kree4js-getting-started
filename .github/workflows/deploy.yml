@@ -32,6 +32,13 @@ jobs:
       - name: Build GitBook
         run: npm exec -- honkit build
 
+      # Replace the theme's default favicon with this project's custom icons.
+      # Kept project-local so the shared theme is not modified.
+      - name: Override favicon with custom icons
+        run: |
+          cp assets/favicon/favicon.ico _book/gitbook/images/favicon.ico
+          cp assets/favicon/apple-touch-icon-152.png _book/gitbook/images/apple-touch-icon-precomposed-152.png
+
       - name: Configure SSH
         run: |
           mkdir -p ~/.ssh
