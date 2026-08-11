@@ -5,5 +5,9 @@
     "language": "cn",
     "publisher": "Self-Published",
     "pubdate": "2026-07-16",
-    "rights": "CC BY-NC-ND 4.0"
+    "rights": "CC BY-NC-ND 4.0",
+    "plugins": [
+        "theme-icp",
+        "-theme-default"
+    ]
 }

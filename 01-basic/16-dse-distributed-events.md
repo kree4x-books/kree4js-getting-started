@@ -68,7 +68,7 @@ import Kree4n from '@kree4js/kree4n'
 
 NodeJS原生EventEmitter，支持。
 
-@kree4js/commons-events的EventEmitter，NodeJS和**浏览器端**都可用。
+@kree4js/commons-events的EventEmitter，NodeJS和**浏览器端**，都可用。
 
 详情参阅：[零零碎碎的稀奇古怪之EventEmitter：支持Owner分组管理](https://zhuanlan.zhihu.com/p/2037107293641232612)
 
@@ -119,6 +119,14 @@ Fail-Fast
 同步的回调失败，阻止后续回调；异步的回调，使用 Promise.all 统一执行。
 
 回调失败，触发 “**error**”事件
+
+ **8. 如何保证事件”最终一次到达“**
+使用Kafka类消息总线，作为底层的通信信道。
+
+如果使用Kafka，可参阅：《基础篇：使用Kafka协议连接》。
+
+如果确保Kafka**只被**用于DSE，可参阅：《中级篇：传输策略：使用TransportPolicy为服务调用通信协议与信道》
+
 
 ### 四. 涉及到的API
 

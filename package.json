@@ -27,6 +27,7 @@
     "eslint-config-standard": "^17.1.0",
     "eslint-plugin-n": "^18.2.2",
     "globals": "^15.0.0",
+    "honkit": "^6.2.2",
     "standard": "^17.1.2"
   },
   "overrides": {

@@ -1,0 +1,11 @@
+{
+  "name": "gitbook-plugin-icp-footer",
+  "version": "1.0.0",
+  "description": "Add ICP filing number to footer",
+  "main": "index.js",
+  "keywords": ["gitbook", "plugin"],
+  "engines": {
+    "honkit": ">=3.0.0"
+  },
+  "dependencies": {}
+}

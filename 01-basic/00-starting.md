@@ -18,7 +18,7 @@ git clone git@github.com:kree4x-books/kree4js-getting-started.git
 
 ### 构建工程
 
-切换到工程目录：
+切换到工程根目录：
 
 ```shell
 npm i
