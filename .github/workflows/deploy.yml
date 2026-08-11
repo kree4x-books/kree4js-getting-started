@@ -18,16 +18,19 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Install honkit
-        run: npm install -g honkit
+      # Install honkit into the project's local node_modules (not global).
+      # HonKit resolves plugins via require.resolve from its own module dir,
+      # so a plugin symlink only works when honkit lives in the project node_modules.
+      - name: Install dependencies
+        run: npm ci
 
+      # Create the theme symlink AFTER npm ci, otherwise npm would remove it.
       - name: Link local theme
         run: |
-          mkdir -p node_modules
           ln -sfn ../themes/gitbook-theme-icp node_modules/gitbook-plugin-theme-icp
 
       - name: Build GitBook
-        run: honkit build
+        run: npm exec -- honkit build
 
       - name: Configure SSH
         run: |
