@@ -21,6 +21,11 @@ jobs:
       - name: Install honkit
         run: npm install -g honkit
 
+      - name: Link local theme
+        run: |
+          mkdir -p node_modules
+          ln -sfn ../themes/gitbook-theme-icp node_modules/gitbook-plugin-theme-icp
+
       - name: Build GitBook
         run: honkit build
 
