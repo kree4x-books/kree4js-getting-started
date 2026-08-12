@@ -24,7 +24,7 @@
 - 中级篇
   - [01. 数据管线：使用Pipeline处理出站入站原始数据](02-advance/01-data-pipeline.md)
   - [02. 拦截调用：使用服务拦截器AOP处理服务调用及调用结果](02-advance/02-service-interceptor-aop.md)
-  - [03. 服务发现：使用WaitPolicy定制发现策略](02-advance/03-wait-policy.md)
+  - [03. 服务发现：使用WaitPolicy定制服务发现判定策略](02-advance/03-wait-policy.md)
   - [04. 服务集群：使用SelectPolicy选择目标节点](02-advance/04-select-policy.md)
   - [05. 服务集群：使用ReducePolicy合并多目标节点响应数据](02-advance/05-reduce-policy.md)
   - [06. 服务转发：使用ForwardPolicy定制转发策略](02-advance/06-forward-policy.md)
