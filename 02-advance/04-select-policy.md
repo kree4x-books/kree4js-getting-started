@@ -36,7 +36,7 @@ Kree4X 中，多个节点可以注册**同名服务**。这些提供了同名服
 
 Kree4X，并不限制一次服务调用可以实际调用的目标服务的个数。
 
-如果SelectPolicy执行的结果是多个节点，则会对选中的每个节点发起调用，调用的多个结果，需要使用**ReducePolicy**归约为“**1**”，下章再讲。
+如果SelectPolicy执行的结果是多个节点，则会对选中的每个节点发起调用，调用的多个结果，需要使用**ReducePolicy**归约为“**1**”个结果，这个下章再讲。
 
 - **单目标选择**：`SelectFirst`/`SelectLoop`/`SelectRandom`/`SelectSticky`等选择策略，选择的结果是“**1**”个节点。
 - **多目标选择**：`SelectTop(number)`/`SelectAll`等选择策略，选择的结果是多个节点。
@@ -58,8 +58,6 @@ Kree4X，并不限制一次服务调用可以实际调用的目标服务的个�
 - node-a / node-b / node-c：3 个服务节点，注册同名 `sensor` 服务，分别返回 10 / 20 / 30
 - caller：**调用发起者**，依次演示不同选择策略
 
-> 节点创建、连接、启动、停止等样板操作从略，只聚焦**选择策略**的用法。
-
 **1. 注册服务，获取存根**
 
 ```javascript
@@ -71,16 +69,13 @@ nodeC.register('sensor', { read () { return 30 } })
 // 调用发起者，获取服务存根
 const caller = create('caller')
 const sensor = caller.service('sensor')
+// 如何获得候选节点? 等待收集到3个提供者
 sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
 ```
 
-> **如何获得候选节点**：通过 `waitWhoHas(WhoHasWaitPolicy.three(5000))` 等待收集到 **3 个**提供者。
->
-> 这样存根的候选就是这 3 个节点，`select` 只是从这 3 个里挑选。
-
 **2. 单目标选择策略**
 
-每个策略演示前，都重新获取 `sensor` 服务存根（类型都是服务存根，只是设定的选择策略不同），并 `waitWhoHas(three)` 等满 3 个提供者：
+每个策略演示前，都重新获取 `sensor` 服务存根（类型都是服务存根，只是设定的选择策略不同），并 `waitWhoHas(three)` 等满3个提供者：
 
 ```javascript
 // SelectFirst：始终选第一个节点（等满 3 个，始终命中 node-a）
@@ -111,7 +106,7 @@ await sensor.read()   // 首次选定某个节点
 await sensor.read()   // 后续复用同一节点
 ```
 
-**3. 多目标选择策略（默认ReducePolicy是First）**
+**3. 多目标选择策略，默认ReducePolicy是SelectFirst**
 
 ```javascript
 // SelectTop(2)：取前 2 个节点发起调用，结果用默认 ReduceFirst 归约
