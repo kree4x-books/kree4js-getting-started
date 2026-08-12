@@ -41,16 +41,16 @@ Kree4X的服务调用，完全是动态的，对远端服务的存在性，不�
 **收到任意IHave信号即可**
 
 ```javascript
-// node-a：数据中心，注册 sensor
-const nodeA = create('node-a', '数据中心')
+// node-a：注册 sensor
+const nodeA = create('node-a')
 nodeA.register('sensor', {
   read () {
     return 'read-from-node-a'
   }
 })
 
-// node-b：第二提供者，同样注册 sensor
-const nodeB = create('node-b', '第二提供者')
+// node-b：同样注册 sensor
+const nodeB = create('node-b')
 nodeB.register('sensor', {
   read () {
     return 'read-from-node-b'
@@ -58,7 +58,7 @@ nodeB.register('sensor', {
 })
 
 // 调用发起者
-const callerOne = create('caller-one', '等 1 个提供者')
+const callerOne = create('caller-one', '等1个提供者')
 
 // 获取服务存根
 const sensorOne = callerOne.service('sensor')
@@ -67,8 +67,6 @@ sensorOne.waitWhoHas(WhoHasWaitPolicy.one(3000))
 const value = await sensorOne.read()
 // 被调用的是A或者B，都有可能
 ```
-
-> `WhoHasWaitPolicy` 从 `Transports` 命名空间导出：`const { WhoHasWaitPolicy } = Transports`。
 
 ### 三. 须强调的细节
 

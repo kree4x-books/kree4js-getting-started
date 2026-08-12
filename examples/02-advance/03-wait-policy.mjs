@@ -17,8 +17,8 @@ const PORT_B = 8031
 //   注意：等待只在"本次调用"的收集窗口内有效，等不到足够提供者会直接抛错。
 
 async function main () {
-  // node-a：数据中心，注册 sensor
-  const nodeA = create('node-a', '数据中心')
+  // node-a：注册 sensor
+  const nodeA = create('node-a')
   nodeA.register('sensor', {
     read () {
       return 'read-from-node-a'
@@ -26,8 +26,8 @@ async function main () {
   })
   nodeA.listen(`tcp://127.0.0.1:${PORT_A}`)
 
-  // node-b：第二提供者，同样注册 sensor
-  const nodeB = create('node-b', '第二提供者')
+  // node-b：同样注册 sensor
+  const nodeB = create('node-b')
   nodeB.register('sensor', {
     read () {
       return 'read-from-node-b'
@@ -36,7 +36,7 @@ async function main () {
   nodeB.listen(`tcp://127.0.0.1:${PORT_B}`)
 
   // 调用发起者：等 1 个提供者
-  const callerOne = create('caller-one', '等 1 个提供者')
+  const callerOne = create('caller-one', '等1个提供者')
   callerOne.attach(`tcp://127.0.0.1:${PORT_A}`)
   callerOne.attach(`tcp://127.0.0.1:${PORT_B}`)
 
@@ -50,8 +50,7 @@ async function main () {
     // waitWhoHas(one)：至少1个，等待3s超时
     sensorOne.waitWhoHas(WhoHasWaitPolicy.one(3000))
     const value = await sensorOne.read()
-    logger.info(`读到: ${value}`)
-    // 被调用的是A或者B，都有可能
+    logger.info(`读到: ${value}`) // 被调用的是A或者B，都有可能
   } finally {
     await ExecUtils.quiet(() => callerOne.stop(), logger)
     logger.info(`${callerOne}，已停止`)
