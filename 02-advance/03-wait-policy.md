@@ -38,7 +38,7 @@ Kree4X的服务调用，完全是动态的，对远端服务的存在性，不�
 - node-b：**服务开放者B**，同样注册 `sensor.read()`
 - caller：**调用发起者**
 
-**1. 等 1 个提供者**
+**收到任意IHave信号即可**
 
 ```javascript
 // node-a：数据中心，注册 sensor
@@ -80,13 +80,23 @@ const value = await sensorOne.read()
 
 当节点失效时，会从缓存中，被自动移除。
 
+**2. 何时再次触发WhoHas-Ihave？**
+
+缓存的节点失效是，会被从缓存中移除。
+
+当缓存中的节点数，不在满足触发WaitPolicy时，会再次触发一次WhoHas-Ihave动态发现。
+
 **2. 如何判定接收的IHave信号已足够？**
 
 调用`WaitPolicy.isEnough (arrivers:Iterable<iHaveSignal>):boolean`，返回true，则足够。
 
 **3. Wait超时**
 
-- new WaitPolicy(timeout:number)时，可设定等待的毫秒值。
+WaitPolicy是WhoHasWaitPolicy的基类。
+
+使用WaitPolicy(timeout:number)构造子参数timeout参数可设定等待的毫秒值。
+
+WhoHasWaitPolicy的各种构造方法中，允许指定timeout。
 
 **4. 內建的Policy**
 
@@ -122,7 +132,7 @@ WhoHasWaitPolicy.two(timeout): WhoHasWaitPolicy
 // 收集到 3 个 IHave 即认定满足
 WhoHasWaitPolicy.three(timeout): WhoHasWaitPolicy
 // 等满 timeout，收集所有应答
-WhoHasWaitPolicy.Any(timeout): WhoHasWaitPolicy
+WhoHasWaitPolicy.any(timeout): WhoHasWaitPolicy
 ```
 
 ### 五. 可运行代码
