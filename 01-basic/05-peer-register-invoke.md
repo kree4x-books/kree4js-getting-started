@@ -78,7 +78,7 @@ listen/attach只是连接建立的方向不同，连接建立后，双方完全�
 
 ### 四. 涉及到的API:
 
-**1. 注册服务 register()**
+**1. 注册服务register()**
 
 将一个服务实现注册到Kree4X节点。
 
@@ -93,7 +93,7 @@ listen/attach只是连接建立的方向不同，连接建立后，双方完全�
 register(serviceName, serviceImpl): Service
 ```
 
-**2. 获取服务存根 service()**
+**2. 获取服务存根service()**
 
 获取一个服务的透明代理（ServiceCluster），用于发起远程调用。
 

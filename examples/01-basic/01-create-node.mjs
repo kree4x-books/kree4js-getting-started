@@ -7,15 +7,15 @@ Logging.setLevel('DEBUG')
 const logger = Logging.getLogger('create-node')
 
 /**
- * 使用 create() 一键创建配置完备的 KreeX 节点。
+ * 使用create() 一键创建配置完备的KreeX节点。
  *
- * create() 自动注册了 BinaryProtocol + 所有网络传输协议。
+ * create() 自动注册了BinaryProtocol + 所有网络传输协议。
  */
 async function main () {
-  // 方式 1：仅指定 name
+  // 方式1：仅指定name
   const node1 = Kree4n.create('node-1')
 
-  // 方式 2：指定 name + description
+  // 方式2：指定name + description
   const node2 = Kree4n.create('node-2', 'A demo node')
 
   logger.info('=== 节点信息 ===')

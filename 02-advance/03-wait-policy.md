@@ -4,7 +4,7 @@
 
 **目的与场景**
 
-在这一章，讲解如何使用 **WhoHasWaitPolicy**，为服务调用**WhoHas-IHave 动态服务查找机制** 设定**截止条件**：根据何种算法、策略，认定收到的IHave 应答，已满足查找条件。
+在这一章，讲解如何使用 **WhoHasWaitPolicy**，为服务调用**WhoHas-IHave动态服务查找机制** 设定**截止条件**：根据何种算法、策略，认定收到的IHave应答，已满足查找条件。
 
 ### 一. 概念
 
@@ -14,7 +14,7 @@ Kree4X的服务调用，完全是动态的，对远端服务的存在性，不�
 
 內建基于WhoHas-IHave动态服务查找机制。
 
-服务调用发起时，调用发起者向外广播 **WhoHas**信号：谁可提供 service X？
+服务调用发起时，调用发起者向外广播 **WhoHas**信号：谁可提供service X？
 
 可提供该服务的节点，以**IHave**信号应答。
 
@@ -41,7 +41,7 @@ Kree4X的服务调用，完全是动态的，对远端服务的存在性，不�
 **收到任意IHave信号即可**
 
 ```javascript
-// node-a：注册 sensor
+// node-a：注册sensor
 const nodeA = create('node-a')
 nodeA.register('sensor', {
   read () {
@@ -49,7 +49,7 @@ nodeA.register('sensor', {
   }
 })
 
-// node-b：同样注册 sensor
+// node-b：同样注册sensor
 const nodeB = create('node-b')
 nodeB.register('sensor', {
   read () {
@@ -98,21 +98,21 @@ WhoHasWaitPolicy的各种构造方法中，允许指定timeout。
 
 **4. 內建的Policy**
 
-`WhoHasWaitPolicy` 提供以下內建静态工厂方法，按需要的 IHave 应答数量选择：
+`WhoHasWaitPolicy` 提供以下內建静态工厂方法，按需要的IHave应答数量选择：
 
-- `WhoHasWaitPolicy.one(timeout)`：收集到 **1 个** IHave 应答即认定满足。
-- `WhoHasWaitPolicy.two(timeout)`：收集到 **2 个** IHave 应答即认定满足。
-- `WhoHasWaitPolicy.three(timeout)`：收集到 **3 个** IHave 应答即认定满足。
-- `WhoHasWaitPolicy.any(timeout)`：等待满 `timeout` 毫秒，收集**所有** IHave 应答（不设数量阈值）。
+- `WhoHasWaitPolicy.one(timeout)`：收集到 **1个** IHave应答即认定满足。
+- `WhoHasWaitPolicy.two(timeout)`：收集到 **2个** IHave应答即认定满足。
+- `WhoHasWaitPolicy.three(timeout)`：收集到 **3个** IHave应答即认定满足。
+- `WhoHasWaitPolicy.any(timeout)`：等待满 `timeout` 毫秒，收集**所有** IHave应答（不设数量阈值）。
 
-### 四. 涉及到的 API
+### 四. 涉及到的API
 
 **1. CallerServiceCluster.waitWhoHas：设定WaitPolicy**
 
 ```typescript
 /**
- * 为服务存根设定 WhoHas 查找的满足判定策略：
- * 收集到多少个 IHave 应答，才认定本次查找已满足需求。
+ * 为服务存根设定WhoHas查找的满足判定策略：
+ * 收集到多少个IHave应答，才认定本次查找已满足需求。
  *
  * @param {WhoHasWaitPolicy} waitPolicy - 满足判定策略（阈值 + 等待时长）。
  * @returns {this} 当前存根，支持链式。
@@ -123,13 +123,13 @@ waitWhoHas(waitPolicy): this
 **2. WhoHasWaitPolicy：满足判定策略**
 
 ```typescript
-// 收集到 1 个 IHave 即认定满足，最多收集 timeout 毫秒
+// 收集到1个IHave即认定满足，最多收集timeout毫秒
 WhoHasWaitPolicy.one(timeout): WhoHasWaitPolicy
-// 收集到 2 个 IHave 即认定满足
+// 收集到2个IHave即认定满足
 WhoHasWaitPolicy.two(timeout): WhoHasWaitPolicy
-// 收集到 3 个 IHave 即认定满足
+// 收集到3个IHave即认定满足
 WhoHasWaitPolicy.three(timeout): WhoHasWaitPolicy
-// 等满 timeout，收集所有应答
+// 等满timeout，收集所有应答
 WhoHasWaitPolicy.any(timeout): WhoHasWaitPolicy
 ```
 

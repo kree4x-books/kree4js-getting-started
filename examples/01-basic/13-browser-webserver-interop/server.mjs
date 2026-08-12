@@ -17,9 +17,9 @@ const logger = Logging.getLogger('browser-webserver-interop')
 
 const PORT = 9000
 const __dirname = dirname(fileURLToPath(import.meta.url))
-// 定位已安装的 @kree4js/kree4b 的 UMD 构建产物：
-// UMD 只在 exports 的 browser condition 下暴露（Node 默认 conditions 解析不到），
-// 故从包入口（esm）反推包根再进入 umd 目录
+// 定位已安装的 @kree4js/kree4b的UMD构建产物：
+// UMD只在exports的browser condition下暴露（Node默认conditions解析不到），
+// 故从包入口（esm）反推包根再进入umd目录
 const require = createRequire(import.meta.url)
 const KREE4B_UMD_PATH = resolve(dirname(require.resolve('@kree4js/kree4b')), '../../umd/prod/index.js')
 const MIME_TYPES = { '.html': 'text/html', '.js': 'application/javascript' }
@@ -27,24 +27,24 @@ const MIME_TYPES = { '.html': 'text/html', '.js': 'application/javascript' }
 /**
  * 浏览器与Web服务器双向互调示例（服务端部分）。
  *
- * - 服务端由 kree4n + http-listen 提供：监听 http:// 端口，动态路由 RPC 与静态文件
- * - 浏览器端由 kree4b（UMD构建产物）提供：client.html 载入后通过 browser-attach 连接
+ * - 服务端由kree4n + http-listen提供：监听http:// 端口，动态路由RPC与静态文件
+ * - 浏览器端由kree4b（UMD构建产物）提供：client.html载入后通过browser-attach连接
  *
  * 关键点：
- * - 复用传入的 httpServer：静态文件走自定义路由，RPC 请求与 WebSocket 升级交给 Kree4X 路由
- * - http-listen 提供三种信道：fetch-stream / xhr-poll / websocket，browser-attach 自动协商
- * - 浏览器端点击 RPC 按钮，即完成一次"浏览器 → Node服务器"的远程调用
+ * - 复用传入的httpServer：静态文件走自定义路由，RPC请求与WebSocket升级交给Kree4X路由
+ * - http-listen提供三种信道：fetch-stream / xhr-poll / websocket，browser-attach自动协商
+ * - 浏览器端点击RPC按钮，即完成一次"浏览器 → Node服务器"的远程调用
  *
  * 运行方式：
- *   1. npm install @kree4js/kree4b（npm 包自带 UMD 构建产物）
+ *   1. npm install @kree4js/kree4b（npm包自带UMD构建产物）
  *   2. node examples/01-basic/13-browser-webserver-interop/server.mjs
- *   3. 浏览器打开 http://localhost:9000/client.html
+ *   3. 浏览器打开http://localhost:9000/client.html
  */
 async function main () {
-  // ── 静态文件服务（client.html 与 kree4b UMD bundle） ──
+  // ── 静态文件服务（client.html与kree4b UMD bundle） ──
   const httpServer = createServer()
   httpServer.on('request', (req, res) => {
-    if (req.method !== 'GET') return // 其余请求交给 Kree4X 的 RPC 路由
+    if (req.method !== 'GET') return // 其余请求交给Kree4X的RPC路由
 
     let filePath
     if (req.url === '/' || req.url === '/client.html') {
@@ -65,7 +65,7 @@ async function main () {
     }
   })
 
-  // ── Node（Web服务器），注册 calc、greet 服务 ─────────
+  // ── Node（Web服务器），注册calc、greet服务 ─────────
   const node = Kree4n.create('browser-server', 'Kree4B Example RPC Server', { port: PORT })
   node.register('calc', {
     add (a, b) { return a + b },
@@ -76,7 +76,7 @@ async function main () {
     echo (data) { return data }
   })
 
-  // 复用上面的 httpServer：静态文件 + RPC 由同一端口提供
+  // 复用上面的httpServer：静态文件 + RPC由同一端口提供
   node.listen(`http://0.0.0.0:${PORT}`, { httpServer })
 
   await node.start()

@@ -8,30 +8,30 @@
 
 ### 一. 概念
 
-**1. Socket.IO 协议**
+**1. Socket.IO协议**
 
-Socket.IO 是一个基于 WebSocket 构建的实时通信库，并内置多传输回退机制：
+Socket.IO是一个基于WebSocket构建的实时通信库，并内置多传输回退机制：
 
-- 优先使用 WebSocket，连接失败时自动回退到 HTTP 长轮询（Long Polling）
+- 优先使用WebSocket，连接失败时自动回退到HTTP长轮询（Long Polling）
 - 提供房间（Room）、事件广播等高级模型
 - 自带重连、心跳、二进制分帧等能力，连接管理开箱即用
 - 浏览器兼容性极好，是浏览器与服务端实时通信的常用选择
 
-与裸 WebSocket 相比，Socket.IO 牺牲部分性能换取更高的连接可靠性和广播能力。
+与裸WebSocket相比，Socket.IO牺牲部分性能换取更高的连接可靠性和广播能力。
 
-**2. Socket.IO 在 Kree4X 中的角色**
+**2. Socket.IO在Kree4X中的角色**
 
-Socket.IO 是第三方库，代码体积较大，不适合内建于 kree4n。
+Socket.IO是第三方库，代码体积较大，不适合内建于kree4n。
 
-kree4n 不内置 Socket.IO 的 Provider，需要独立安装：
+kree4n不内置Socket.IO的Provider，需要独立安装：
 
 ```bash
 npm install @kree4js/socketio-listen @kree4js/socketio-attach
 ```
 
 - 服务端由 `@kree4js/socketio-listen` 提供，客户端由 `@kree4js/socketio-attach` 提供
-- **需要手动注册**：listen/attach 两侧都要注册对应的 Connection Provider
-- Socket.IO URL 使用 `io://` 协议，与服务端的监听地址一一对应
+- **需要手动注册**：listen/attach两侧都要注册对应的Connection Provider
+- Socket.IO URL使用 `io://` 协议，与服务端的监听地址一一对应
 
 ### 二. 示例代码
 
@@ -49,7 +49,7 @@ import { SocketioAttachConnectionProvider } from '@kree4js/socketio-attach'
 
 // ── Node A（Socket.IO服务器，注册calc服务） ─────────────
 const nodeA = Kree4n.create('node-a', 'Socket.IO RPC server')
-// SocketioListenConnectionProvider 需手动注册后才能识别 io:// 协议
+// SocketioListenConnectionProvider需手动注册后才能识别io:// 协议
 nodeA.useConnectionProvider(new SocketioListenConnectionProvider())
 nodeA.register('calc', {
   add (a, b) { return a + b },
@@ -59,7 +59,7 @@ nodeA.listen('io://127.0.0.1:8030')
 
 // ── Node B（Socket.IO客户端，注册str服务） ─────────────
 const nodeB = Kree4n.create('node-b', 'Socket.IO RPC client')
-// SocketioAttachConnectionProvider 需手动注册后才能识别 io:// 协议
+// SocketioAttachConnectionProvider需手动注册后才能识别io:// 协议
 nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
 nodeB.register('str', {
   echo (msg) { return `Echo: ${msg}` },
@@ -70,12 +70,12 @@ nodeB.attach('io://127.0.0.1:8030')
 await nodeA.start()
 await nodeB.start()
 
-// node-b 调用 node-a 的 calc 服务
+// node-b调用node-a的calc服务
 const calc = nodeB.service('calc')
 const addResult = await calc.add(10, 20)      // 30
 const mulResult = await calc.multiply(6, 7)   // 42
 
-// node-a 调用 node-b 的 str 服务（双向）
+// node-a调用node-b的str服务（双向）
 const str = nodeA.service('str')
 const echoResult = await str.echo('Socket.IO works!')  // "Echo: Socket.IO works!"
 const greetResult = await str.greet('World')           // "Hello, World! (via Socket.IO)"
@@ -85,7 +85,7 @@ const greetResult = await str.greet('World')           // "Hello, World! (via So
 
 **1. 需要手动安装并注册**
 
-Socket.IO 是第三方库，体积较大，kree4n 不内置。使用前需要：
+Socket.IO是第三方库，体积较大，kree4n不内置。使用前需要：
 
 1. 安装独立包：`npm install @kree4js/socketio-listen @kree4js/socketio-attach`
 2. 服务端注册 `SocketioListenConnectionProvider`，客户端注册 `SocketioAttachConnectionProvider`：
@@ -98,11 +98,11 @@ nodeA.useConnectionProvider(new SocketioListenConnectionProvider())
 nodeB.useConnectionProvider(new SocketioAttachConnectionProvider())
 ```
 
-不注册对应组件，`io://` 协议将无法被识别，listen/attach 会直接失败。
+不注册对应组件，`io://` 协议将无法被识别，listen/attach会直接失败。
 
 **2. 传输回退**
 
-Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网络中 WebSocket 被防火墙拦截的环境下，这一机制能保证连接依然可用。
+Socket.IO默认优先WebSocket，不可用时回退到HTTP长轮询。在网络中WebSocket被防火墙拦截的环境下，这一机制能保证连接依然可用。
 
 ### 四. 涉及到的API:
 
@@ -110,12 +110,12 @@ Socket.IO 默认优先 WebSocket，不可用时回退到 HTTP 长轮询。在网
 
 ```typescript
 /**
- * 监听传入的 Socket.IO 连接。
+ * 监听传入的Socket.IO连接。
  *
- * 使用前需安装 @kree4js/socketio-listen 并注册 SocketioListenConnectionProvider：
+ * 使用前需安装 @kree4js/socketio-listen并注册SocketioListenConnectionProvider：
  * node.useConnectionProvider(new SocketioListenConnectionProvider())
  *
- * @param {string} url - 要监听的 URL，例如 "io://127.0.0.1:8030"。
+ * @param {string} url - 要监听的URL，例如 "io://127.0.0.1:8030"。
  * @returns {this} 当前实例，用于链式调用。
  */
 node.listen(url: string): this
@@ -125,12 +125,12 @@ node.listen(url: string): this
 
 ```typescript
 /**
- * 通过 Socket.IO 协议连接到远端节点。
+ * 通过Socket.IO协议连接到远端节点。
  *
- * 使用前需安装 @kree4js/socketio-attach 并注册 SocketioAttachConnectionProvider：
+ * 使用前需安装 @kree4js/socketio-attach并注册SocketioAttachConnectionProvider：
  * node.useConnectionProvider(new SocketioAttachConnectionProvider())
  *
- * @param {string} url - 要连接的 URL，例如 "io://127.0.0.1:8030"。
+ * @param {string} url - 要连接的URL，例如 "io://127.0.0.1:8030"。
  * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this

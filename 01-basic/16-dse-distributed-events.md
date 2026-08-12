@@ -9,7 +9,7 @@
 - 一个节点把事件"广播"出去，
 - 另一个节点远程"聆听"并响应
 
-与 RPC 不同，事件是**一对多、异步、单向**的：发布方不关心谁在听，也无需等待处理结果。
+与RPC不同，事件是**一对多、异步、单向**的：发布方不关心谁在听，也无需等待处理结果。
 
 ### 一. 概念
 
@@ -23,7 +23,7 @@ DSE = Distributed Service Events，分布式服务事件。
 
 **2. 解决什么问题？**
 
-1. 把 Node.js 的 `EventEmitter`（事件发射器）开放为远程服务
+1. 把Node.js的 `EventEmitter`（事件发射器）开放为远程服务
 2. 广播式通知场景：一个服务向多个订阅者推送同一事件，订阅者各自处理，互不影响。
 3. 服务开放者，可触发emit()方法。
 4. 所有**远程服务存根，也能触发emit()**方法。事件服务存根不仅能 `on()` 订阅，也能 `emit()` 反向驱动发布端。
@@ -32,8 +32,8 @@ DSE = Distributed Service Events，分布式服务事件。
 
 在下边的示例中，我们将：
 
-- nodeA：新闻直播间，开放 `newsService`（一个 EventEmitter）作为服务，基于此发布新闻消息
-- nodeB：新闻订阅者，获得 nodeA `newsService`的本地透明服务存根后，`on('news', ...)` 订阅新闻消息
+- nodeA：新闻直播间，开放 `newsService`（一个EventEmitter）作为服务，基于此发布新闻消息
+- nodeB：新闻订阅者，获得nodeA `newsService`的本地透明服务存根后，`on('news', ...)` 订阅新闻消息
 
 ```javascript
 // internal
@@ -41,22 +41,22 @@ import { EventEmitter } from '@kree4js/commons-events'
 import DSE from '@kree4js/dse'
 import Kree4n from '@kree4js/kree4n'
 
-  // kree4n 创建节点后，enableDse 开启分布式事件能力
+  // kree4n创建节点后，enableDse开启分布式事件能力
   const nodeA = DSE.enable(Kree4n.create('node-a', '新闻直播间'))
   const nodeB = DSE.enable(Kree4n.create('node-b', '新闻订阅者'))
 
-  // nodeA 注册直播间（EventEmitter）——"开播"
+  // nodeA注册直播间（EventEmitter）——"开播"
   const newsroom = new EventEmitter()
   nodeA.register('newsService', newsroom)
 
-  // nodeB 获取"远程直播间"并订阅 news 事件
+  // nodeB获取"远程直播间"并订阅news事件
   const newsProxy = nodeB.eventService('newsService')
   newsProxy.on('news', (news) => {
     logger.info(`收到新闻: ${news.headline}`)
   })
 
   // nodeA广播
-  newsroom.emit('news', { headline: 'Kree4JS 发布 1.0 版本' })
+  newsroom.emit('news', { headline: 'Kree4JS发布1.0版本' })
 
   // NodeB驱动NodeA广播
   newsProxy.emit('news', { headline: '分布式事件订阅指南上线' })
@@ -82,21 +82,21 @@ NodeJS原生EventEmitter，支持。
 
 **3. 订阅广播“事件”，多次接收"通知"**
 
-DSE 的事件是**广播**：发布者 `emit` 一次，所有已订阅的订阅者都能收到。
+DSE的事件是**广播**：发布者 `emit` 一次，所有已订阅的订阅者都能收到。
 
 发布者不需要知道有多少订阅者。
 
 **4. 事件订阅是"持久"的**
 
-DSC 回调是一次性的，投递后自动注销。
+DSC回调是一次性的，投递后自动注销。
 
-DSE 订阅是持久的：`on()` 订阅后，发布者**任意多次** `emit` 同一事件对方都能收到，直到显式 `off()`。
+DSE订阅是持久的：`on()` 订阅后，发布者**任意多次** `emit` 同一事件对方都能收到，直到显式 `off()`。
 
 **5. 用 `eventService()` 获取透明服务存根**
 
 普通服务用 `node.service(name)`获取存根。
 
-DSE 事件服务使用 `node.eventService(name)` 获取服务存根。
+DSE事件服务使用 `node.eventService(name)` 获取服务存根。
 
 它返回的代理支持 `.on()` / `.off()` 订阅远程事件。
 
@@ -116,7 +116,7 @@ DSE 事件服务使用 `node.eventService(name)` 获取服务存根。
 
 Fail-Fast
 
-同步的回调失败，阻止后续回调；异步的回调，使用 Promise.all 统一执行。
+同步的回调失败，阻止后续回调；异步的回调，使用Promise.all统一执行。
 
 回调失败，触发 “**error**”事件
 
@@ -130,24 +130,24 @@ Fail-Fast
 
 ### 四. 涉及到的API
 
-**1. 为Kree4X节点注入DSE 能力**
+**1. 为Kree4X节点注入DSE能力**
 
 ```javascript
 enable(kreex)
 enableDse(kreex)
 ```
 
-- 入参 `kreex`：由运行时层（kree4n 或 kree4b）创建的 KreeX 实例
-- 返回：开启 DSE 能力的同一 KreeX 实例（原地增强，幂等）
+- 入参 `kreex`：由运行时层（kree4n或kree4b）创建的KreeX实例
+- 返回：开启DSE能力的同一KreeX实例（原地增强，幂等）
 
 **2. 注册EventEmitter服务**
 
 ```typescript
 /**
- * 注册一个服务（KreeX 通用方法）。
+ * 注册一个服务（KreeX通用方法）。
  *
  * @param {string} serviceName - 服务名。
- * @param {EventEmitter} eventEmitter - 事件服务：EventEmitter 实例
+ * @param {EventEmitter} eventEmitter - 事件服务：EventEmitter实例
  * @param {{[key:string]: any}} [serviceOption] - 服务配置选项。
  * @returns {Service} 创建的服务实例。
  */
@@ -161,25 +161,25 @@ register(serviceName, eventEmitter, serviceOption?)
 **3. 注册事件服务的语法糖（fireAndForget / failFast）**
 
 ```typescript
-// 与 register() 等价，但固定了 callback 策略：
+// 与register() 等价，但固定了callback策略：
 nodeA.fireAndForget('newsService', new EventEmitter())   // 策略：fire-and-forget（默认）
 nodeA.failFast('newsService', new EventEmitter())        // 策略：fail-fast
 ```
 
 ```typescript
 /**
- * 以 fire-and-forget / fail-fast 策略注册事件服务（等价于 register() + callback 选项）。
+ * 以fire-and-forget / fail-fast策略注册事件服务（等价于register() + callback选项）。
  *
  * @param {string} serviceName - 服务名。
  * @param {EventEmitter} emitter - 事件发射器实例。
- * @param {{[key:string]: any}} [serviceOption] - 其他注册选项（callback 由语法糖固定，勿传）。
+ * @param {{[key:string]: any}} [serviceOption] - 其他注册选项（callback由语法糖固定，勿传）。
  * @returns {Service} 创建的服务实例
  */
 fireAndForget(serviceName, emitter, serviceOption?)
 failFast(serviceName, emitter, serviceOption?)
 ```
 
-- `register('newsService', emitter)` 默认采用 fire-and-forget 策略
+- `register('newsService', emitter)` 默认采用fire-and-forget策略
 - 两者差别仅在于**发布事件时，订阅端监听器失败的处理策略**：
   - `fire-and-forget`：发布端不感知订阅端失败——同步/异步失败仅记录日志，不触发 `error` 事件，也不影响其他监听器
   - `fail-fast`：监听器同步失败即中止本次发布并触发 `error` 事件；异步失败汇总后同样触发 `error` 事件
@@ -187,12 +187,12 @@ failFast(serviceName, emitter, serviceOption?)
 **4. 获取服务存根，订阅事件**
 
 ```typescript
-// 订阅端：获取远程 EventEmitter 代理，on() 订阅
+// 订阅端：获取远程EventEmitter代理，on() 订阅
 const proxy = nodeB.eventService('newsService')
 proxy.on('news', (payload) => { ... })
 ```
 
-- `on` 的回调在**订阅端本地**执行，收到的是发布端 `emit` 时序列化的 payload 副本
+- `on` 的回调在**订阅端本地**执行，收到的是发布端 `emit` 时序列化的payload副本
 
 **5. emit事件**
 
@@ -204,7 +204,7 @@ newsroom.emit('news', { headline: '...' })
 newsProxy.emit('news', { headline: '...' })
 ```
 
-- 本地 EventEmitter`emit` 事件，远端已订阅者的处理立即触发
+- 本地EventEmitter`emit` 事件，远端已订阅者的处理立即触发
 - 远程服务代理调用`emit` 事件，远端已订阅者的处理立即触发。触发emit的"远程服务代理"自身如果已订阅，**也会收到通知**。
 
 ### 五. 可运行代码

@@ -14,13 +14,13 @@ const logger = Logging.getLogger('websocket-protocol')
  * - nodeB（websocket-attach）：以WebSocket客户端身份连接nodeA，注册str服务
  *
  * 关键点：
- * - WebSocketAttachConnectionProvider 由 kree4n 默认注册，无需手动引入
- * - WebSocket 服务端由 http-listen 内部提供，nodeA 仍用 http:// 监听
- * - nodeB 使用 ws:// 协议与普通 HTTP 客户端区分
+ * - WebSocketAttachConnectionProvider由kree4n默认注册，无需手动引入
+ * - WebSocket服务端由http-listen内部提供，nodeA仍用http:// 监听
+ * - nodeB使用ws:// 协议与普通HTTP客户端区分
  *
  * 调用流程：
- *   node-b 调用 node-a 的 calc 服务
- *   node-a 调用 node-b 的 str 服务（双向互调）
+ *   node-b调用node-a的calc服务
+ *   node-a调用node-b的str服务（双向互调）
  */
 async function main () {
   // ── Node A（HTTP + WebSocket服务器，注册calc服务） ─────────────
@@ -46,14 +46,14 @@ async function main () {
     await nodeB.start()
     logger.info('[nodeB] WebSocket connected to nodeA')
 
-    // node-b 调用 node-a 的 calc 服务
+    // node-b调用node-a的calc服务
     const calc = nodeB.service('calc')
     const addResult = await calc.add(10, 20)
     const mulResult = await calc.multiply(6, 7)
     logger.info(`[nodeB] node-a.calc.add(10, 20) = ${addResult}`)
     logger.info(`[nodeB] node-a.calc.multiply(6, 7) = ${mulResult}`)
 
-    // node-a 调用 node-b 的 str 服务（双向）
+    // node-a调用node-b的str服务（双向）
     const str = nodeA.service('str')
     const echoResult = await str.echo('WebSocket works!')
     const greetResult = await str.greet('World')

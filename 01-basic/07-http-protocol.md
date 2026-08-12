@@ -57,7 +57,7 @@ nodeB.attach('http://127.0.0.1:8040')
 await nodeA.start()
 await nodeB.start()
 
-// node-b 调用 node-a 的 calc 服务
+// node-b调用node-a的calc服务
 const calc = nodeB.service('calc')
 const addResult = await calc.add(10, 20)      
 // 30
@@ -65,7 +65,7 @@ const addResult = await calc.add(10, 20)
 const mulResult = await calc.multiply(6, 7)   
 // 42
 
-// node-a 调用 node-b 的 str 服务（双向）
+// node-a调用node-b的str服务（双向）
 const str = nodeA.service('str')
 const echoResult = await str.echo('HTTP works!')   
 // "Echo: HTTP works!"
@@ -113,7 +113,7 @@ NodeJS HTTP协议下，使用流式通信，如果每次发送一个完整的帧
 ```typescript
 /**
  * 监听传入的连接。
- * @param {string} url - 要监听的 URL，例如 "http://127.0.0.1:8040"。
+ * @param {string} url - 要监听的URL，例如 "http://127.0.0.1:8040"。
  * @param {ConnectionOptions} [options] - 连接选项。
  * @returns {this} 当前实例，用于链式调用。
  */
@@ -124,8 +124,8 @@ node.listen(url: string, options?: ConnectionOptions): this
 
 ```typescript
 /**
- * 通过 HTTP 协议连接到 HTTP 服务器。
- * @param {string} url - 要连接的 HTTP URL，例如 "http://127.0.0.1:8040"。
+ * 通过HTTP协议连接到HTTP服务器。
+ * @param {string} url - 要连接的HTTP URL，例如 "http://127.0.0.1:8040"。
  * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this

@@ -4,7 +4,7 @@
 
 **目的与场景**
 
-在这一章，讲解**两个NodeJS节点**之间的 RPC 调用时，如何将NodeJS Callback风格的函数开放为服务，然后在远端调用。
+在这一章，讲解**两个NodeJS节点**之间的RPC调用时，如何将NodeJS Callback风格的函数开放为服务，然后在远端调用。
 
 ### 一. 概念
 
@@ -22,8 +22,8 @@ DSC = Distributed Service Callback，分布式服务回调
 
 **4. 解决什么问题？**
 
-1. 非 async、Promise ，传统的NodeJS Callback风格函数，可以被开放为服务，被远程 RPC 调用。
-2. **Callee**，**可感知** callback 函数执行结果：成功，还是失败。
+1. 非async、Promise ，传统的NodeJS Callback风格函数，可以被开放为服务，被远程RPC调用。
+2. **Callee**，**可感知** callback函数执行结果：成功，还是失败。
 
 举个例子：
 
@@ -37,7 +37,7 @@ DSC = Distributed Service Callback，分布式服务回调
 在下边的示例中，我们将：
 
 - nodeA：订餐商家，开放 `restaurant.placeOrder(food, cb)` 服务，执行订单后回调cb，**回访**用户
-- nodeB：消费者，发起订餐并留下 `cb`——此cb回调将在 **nodeB 本地**执行
+- nodeB：消费者，发起订餐并留下 `cb`——此cb回调将在 **nodeB本地**执行
 - nodeA ：感知回访是否成功
 
 ```javascript
@@ -114,7 +114,7 @@ DSC**不创建**Kree4X实例。
 
 ### 四. 涉及到的API:
 
-**1. 基于 Kree4N 节点开启 DSC（enable）**
+**1. 基于Kree4N节点开启DSC（enable）**
 
 ```typescript
 /**
@@ -130,7 +130,7 @@ enable(kreex): KreeX
 import DSC from '@kree4js/dsc'
 import Kree4N from '@kree4js/kree4n'
 
-// 基于 Kree4N 节点开启 DSC 能力
+// 基于Kree4N节点开启DSC能力
 const nodeA = DSC.enable(Kree4N.create('node-a', '订餐商家（被调方）'))
 ```
 
@@ -139,17 +139,17 @@ const nodeA = DSC.enable(Kree4N.create('node-a', '订餐商家（被调方）'))
 ```typescript
 // 被调方注册服务：
 register('restaurant', {
-  // 最后一个参数 cb 是远程回调（callback(err, result) 风格
+  // 最后一个参数cb是远程回调（callback(err, result) 风格
   order(food: string, cb: (err: Error|null, result: any) => void) {
     ...
     cb(null, result)          // 回访成功
-    cb(new Error('...'))      // 回访失败（err 跨节点送达）
+    cb(new Error('...'))      // 回访失败（err跨节点送达）
   }
 })
 
 // 发起方调用：末尾传函数实参，函数体在本地执行
 service.order(food, (err, result) => {
-  // 在发起方空间执行，err 为还原后的 Error（或 null）
+  // 在发起方空间执行，err为还原后的Error（或null）
 })
 ```
 

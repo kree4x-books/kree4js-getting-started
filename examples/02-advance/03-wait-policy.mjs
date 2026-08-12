@@ -12,12 +12,12 @@ const PORT_A = 8030
 const PORT_B = 8031
 
 // 服务发现等待策略：
-//   - waitWhoHas(policy): 存根级等待——首次调用时等 WhoHas 收集到足够的 IHave
-//     WhoHasWaitPolicy.one(n) 等 1 个提供者 / two(n) 等 2 个 / three(n) 等 3 个
+//   - waitWhoHas(policy): 存根级等待——首次调用时等WhoHas收集到足够的IHave
+//     WhoHasWaitPolicy.one(n) 等1个提供者 / two(n) 等2个 / three(n) 等3个
 //   注意：等待只在"本次调用"的收集窗口内有效，等不到足够提供者会直接抛错。
 
 async function main () {
-  // node-a：注册 sensor
+  // node-a：注册sensor
   const nodeA = create('node-a')
   nodeA.register('sensor', {
     read () {
@@ -26,7 +26,7 @@ async function main () {
   })
   nodeA.listen(`tcp://127.0.0.1:${PORT_A}`)
 
-  // node-b：同样注册 sensor
+  // node-b：同样注册sensor
   const nodeB = create('node-b')
   nodeB.register('sensor', {
     read () {
@@ -35,7 +35,7 @@ async function main () {
   })
   nodeB.listen(`tcp://127.0.0.1:${PORT_B}`)
 
-  // 调用发起者：等 1 个提供者
+  // 调用发起者：等1个提供者
   const callerOne = create('caller-one', '等1个提供者')
   callerOne.attach(`tcp://127.0.0.1:${PORT_A}`)
   callerOne.attach(`tcp://127.0.0.1:${PORT_B}`)

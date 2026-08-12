@@ -14,13 +14,13 @@ const logger = Logging.getLogger('udp-protocol')
  * - nodeB（udp-attach）：以UDP客户端身份连接nodeA，注册str服务
  *
  * 关键点：
- * - UDP 是数据报协议，单帧大小受限，必须分帧（frameLimit）
- * - frameLimit: 1152 暂存框架限制，避免 IP 分片
- * - ack: true 启用帧级 ACK，保证 UDP 消息可靠到达
+ * - UDP是数据报协议，单帧大小受限，必须分帧（frameLimit）
+ * - frameLimit: 1152暂存框架限制，避免IP分片
+ * - ack: true启用帧级ACK，保证UDP消息可靠到达
  *
  * 调用流程：
- *   node-b 调用 node-a 的 calc 服务
- *   node-a 调用 node-b 的 str 服务（双向互调）
+ *   node-b调用node-a的calc服务
+ *   node-a调用node-b的str服务（双向互调）
  */
 async function main () {
   // ── Node A（UDP服务器，注册calc服务） ─────────────
@@ -46,14 +46,14 @@ async function main () {
     await nodeB.start()
     logger.info('[nodeB] UDP connected to nodeA')
 
-    // node-b 调用 node-a 的 calc 服务
+    // node-b调用node-a的calc服务
     const calc = nodeB.service('calc')
     const addResult = await calc.add(10, 20)
     const mulResult = await calc.multiply(6, 7)
     logger.info(`[nodeB] node-a.calc.add(10, 20) = ${addResult}`)
     logger.info(`[nodeB] node-a.calc.multiply(6, 7) = ${mulResult}`)
 
-    // node-a 调用 node-b 的 str 服务（双向）
+    // node-a调用node-b的str服务（双向）
     const str = nodeA.service('str')
     const echoResult = await str.echo('UDP works!')
     const greetResult = await str.greet('World')

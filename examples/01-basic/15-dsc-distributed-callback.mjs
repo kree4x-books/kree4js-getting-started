@@ -13,7 +13,7 @@ const logger = Logging.getLogger('dsc-distributed-callback')
 const PORT = 8098
 
 async function main () {
-  // 基于 Kree4N 节点开启 DSC 能力
+  // 基于Kree4N节点开启DSC能力
   const nodeA = DSC.enable(Kree4N.create('node-a', '订餐商家（被调方）'))
   const nodeB = DSC.enable(Kree4N.create('node-b', '消费者（发起方）'))
 
@@ -48,13 +48,13 @@ async function main () {
 
   try {
     await nodeA.start()
-    logger.info(`[nodeA] 商家已营业，监听 tcp://127.0.0.1:${PORT}`)
+    logger.info(`[nodeA] 商家已营业，监听tcp://127.0.0.1:${PORT}`)
     await nodeB.start()
 
     // 获取服务存根
     const orderService = nodeB.service('restaurant')
 
-    // 消费者下单：回调在 nodeB 本地执行
+    // 消费者下单：回调在nodeB本地执行
     const okCall = PromiseUtils.defer()
     orderService.order('美味的食物', (err, result) => err ? okCall.reject(err) : okCall.resolve(result))
     const okNotice = await okCall.promise

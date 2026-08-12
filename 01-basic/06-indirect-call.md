@@ -99,7 +99,7 @@ const result = await greet.hello('World')
 
 ```typescript
 /**
- * 创建一个启用 proxyMode 的 KreeX 实例。
+ * 创建一个启用proxyMode的KreeX实例。
  * @param {string} name - 节点名称。
  * @param {string} [description] - 节点描述。
  * @param {{ transport?: { proxyMode?: boolean } }} [options] - 传输层选项。

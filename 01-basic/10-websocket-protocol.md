@@ -8,21 +8,21 @@
 
 ### 一. 概念
 
-**1. WebSocket 协议**
+**1. WebSocket协议**
 
-WebSocket 是建立在 TCP 之上的全双工通信协议：
+WebSocket是建立在TCP之上的全双工通信协议：
 
-- 通过 HTTP 握手升级（Upgrade: websocket），随后建立持久连接
+- 通过HTTP握手升级（Upgrade: websocket），随后建立持久连接
 - 全双工：客户端与服务端可同时双向收发消息
-- 与普通 HTTP 轮询（xhr-poll / xhr-receive）不同，WebSocket 是一根常驻的双向管道
-- 浏览器原生支持 WebSocket，是实现浏览器与服务端实时通信的基础
+- 与普通HTTP轮询（xhr-poll / xhr-receive）不同，WebSocket是一根常驻的双向管道
+- 浏览器原生支持WebSocket，是实现浏览器与服务端实时通信的基础
 
-与 HTTP 的短连接 / 轮询相比，WebSocket 消除了请求-响应的一来一回开销，延迟更低，适合高频双向调用。
+与HTTP的短连接 / 轮询相比，WebSocket消除了请求-响应的一来一回开销，延迟更低，适合高频双向调用。
 
-**2. WebSocket 在 Kree4X 中的角色**
+**2. WebSocket在Kree4X中的角色**
 
 - 服务端由 `http-listen` 内置提供：监听 `http://` 端口，自动升级 `/kreex/ws` 端点
-- 客户端使用 `ws://` 协议 attach，kree4n 默认注册了 `WebSocketAttachConnectionProvider`，直接使用即可，不需要额外引入
+- 客户端使用 `ws://` 协议attach，kree4n默认注册了 `WebSocketAttachConnectionProvider`，直接使用即可，不需要额外引入
 
 ### 二. 示例代码
 
@@ -42,12 +42,12 @@ nodeA.register('calc', {
   add (a, b) { return a + b },
   multiply (a, b) { return a * b }
 })
-// WebSocket 服务端由 http-listen 内置，使用 http:// 监听即可
+// WebSocket服务端由http-listen内置，使用http:// 监听即可
 nodeA.listen('http://127.0.0.1:8070')
 
 // ── Node B（WebSocket客户端，注册str服务） ─────────────
 const nodeB = Kree4n.create('node-b', 'WebSocket RPC client')
-// WebSocketAttachConnectionProvider 由 kree4n 默认注册，直接使用 ws:// 协议
+// WebSocketAttachConnectionProvider由kree4n默认注册，直接使用ws:// 协议
 nodeB.register('str', {
   echo (msg) { return `Echo: ${msg}` },
   greet (name) { return `Hello, ${name}! (via WebSocket)` }
@@ -57,12 +57,12 @@ nodeB.attach('ws://127.0.0.1:8070')
 await nodeA.start()
 await nodeB.start()
 
-// node-b 调用 node-a 的 calc 服务
+// node-b调用node-a的calc服务
 const calc = nodeB.service('calc')
 const addResult = await calc.add(10, 20)      // 30
 const mulResult = await calc.multiply(6, 7)   // 42
 
-// node-a 调用 node-b 的 str 服务（双向）
+// node-a调用node-b的str服务（双向）
 const str = nodeA.service('str')
 const echoResult = await str.echo('WebSocket works!')  // "Echo: WebSocket works!"
 const greetResult = await str.greet('World')           // "Hello, World! (via WebSocket)"
@@ -72,7 +72,7 @@ const greetResult = await str.greet('World')           // "Hello, World! (via We
 
 **1. WebSocket Attach已内建**
 
-kree4n 默认注册了 HTTP、TCP、UDP、HTTP2、WebSocket 等协议的处理组件，`ws://` 协议可直接使用。
+kree4n默认注册了HTTP、TCP、UDP、HTTP2、WebSocket等协议的处理组件，`ws://` 协议可直接使用。
 
 ```javascript
 nodeB.attach('ws://127.0.0.1:8070')
@@ -101,12 +101,12 @@ WebSocket需要基于HTTP Server开放，所以对HTTP、WebSocket的支持是�
 
 ```typescript
 /**
- * 通过 WebSocket 协议连接到远端节点。
+ * 通过WebSocket协议连接到远端节点。
  *
- * WebSocketAttachConnectionProvider 已由 kree4n 默认注册，无需手动引入：
+ * WebSocketAttachConnectionProvider已由kree4n默认注册，无需手动引入：
  * node.attach('ws://127.0.0.1:8070')
  *
- * @param {string} url - 要连接的 URL，例如 "ws://127.0.0.1:8070"。
+ * @param {string} url - 要连接的URL，例如 "ws://127.0.0.1:8070"。
  * @returns {this} 当前实例，用于链式调用。
  */
 node.attach(url: string): this

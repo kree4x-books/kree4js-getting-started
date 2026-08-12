@@ -13,14 +13,14 @@ const PORT_B = 8052
 const PORT_C = 8053
 
 // 结果归约策略：
-//   - 选中多个目标节点后，框架对每个节点发起调用，得到 N 个 ServiceCallResult。
-//   - 调用者只需一个结果，因此用 ReducePolicy 把 N 个结果归约为 1 个。
+//   - 选中多个目标节点后，框架对每个节点发起调用，得到N个ServiceCallResult。
+//   - 调用者只需一个结果，因此用ReducePolicy把N个结果归约为1个。
 //   - 内置策略：ReduceFirst / ReduceFirstSuccess / ReduceFirstFailure /
 //     ReduceMinNumber / ReduceMaxNumber / ReduceSumNumber / ReduceAvgNumber /
 //     ReduceBest / ReduceWorst。
-//   - 通过 sensor.reduce(policy) 设定当前存根的归约策略。
+//   - 通过sensor.reduce(policy) 设定当前存根的归约策略。
 
-// ── 自定义 ReducePolicy：取结果序列的中位数 ──
+// ── 自定义ReducePolicy：取结果序列的中位数 ──
 class ReduceMedianNumber extends ReducePolicy.ReducePolicy {
   reduce (results) {
     if (results.length === 0) return undefined
@@ -38,7 +38,7 @@ class ReduceMedianNumber extends ReducePolicy.ReducePolicy {
 }
 
 async function main () {
-  // 3 个服务节点，返回可区分的数值：node-a≈10, node-b≈20, node-c≈30
+  // 3个服务节点，返回可区分的数值：node-a≈10, node-b≈20, node-c≈30
   const nodeA = create('node-a', 'Service node a')
   nodeA.register('sensor', { read () { return 10 + Math.random() * 5 } })
   nodeA.listen(`tcp://127.0.0.1:${PORT_A}`)
@@ -54,7 +54,7 @@ async function main () {
   nodeC.listen(`tcp://127.0.0.1:${PORT_C}`)
   await nodeC.start()
 
-  // 调用方：attach 到 3 个服务节点
+  // 调用方：attach到3个服务节点
   const caller = create('caller', 'Reduce caller')
   caller.attach(`tcp://127.0.0.1:${PORT_A}`)
   caller.attach(`tcp://127.0.0.1:${PORT_B}`)
@@ -66,7 +66,7 @@ async function main () {
 
   // 归约需要多个目标，先全选再归约
   const sensor = caller.service('sensor')
-  // 等待收集到 3 个提供者，保证 SelectAll 能选到全部节点
+  // 等待收集到3个提供者，保证SelectAll能选到全部节点
   sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
   sensor.select(new SelectPolicy.SelectAll())
 
@@ -101,18 +101,18 @@ async function main () {
     sensor.reduce(new ReducePolicy.ReduceAvgNumber())
     logger.info(`read: ${await sensor.read()}`)
 
-    // 7. ReduceBest：用 comparer 选最优（数值最大）
-    logger.info('=== ReduceBest（comparer 选数值最大）===')
+    // 7. ReduceBest：用comparer选最优（数值最大）
+    logger.info('=== ReduceBest（comparer选数值最大）===')
     sensor.reduce(new ReducePolicy.ReduceBest((a, b) => b - a))
     logger.info(`read: ${await sensor.read()}`)
 
-    // 8. ReduceWorst：用 comparer 选最差（数值最小）
-    logger.info('=== ReduceWorst（comparer 选数值最小）===')
+    // 8. ReduceWorst：用comparer选最差（数值最小）
+    logger.info('=== ReduceWorst（comparer选数值最小）===')
     sensor.reduce(new ReducePolicy.ReduceWorst((a, b) => b - a))
     logger.info(`read: ${await sensor.read()}`)
 
-    // 9. 自定义 ReduceMedianNumber：中位数
-    logger.info('=== 自定义 ReduceMedianNumber（中位数）===')
+    // 9. 自定义ReduceMedianNumber：中位数
+    logger.info('=== 自定义ReduceMedianNumber（中位数）===')
     sensor.reduce(new ReduceMedianNumber())
     logger.info(`read: ${await sensor.read()}`)
   } finally {

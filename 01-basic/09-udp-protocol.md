@@ -8,30 +8,30 @@
 
 ### 一. 概念
 
-**1. UDP 协议**
+**1. UDP协议**
 
-UDP 是面向数据报的无连接传输协议：
+UDP是面向数据报的无连接传输协议：
 
 - 不建立连接、无握手，每个消息是一个独立数据报
 - 收发双方只需要知道对方的 (IP, 端口) 即可发送数据
 - 不保证送达：数据报可能丢失、乱序、重复
-- 没有 TCP 的拥塞控制与重传机制，单帧大小天然受限
+- 没有TCP的拥塞控制与重传机制，单帧大小天然受限
 
-与 TCP 不同，UDP 没有 keepalive / 重连概念，连接的可靠性完全由应用层保证。
+与TCP不同，UDP没有keepalive / 重连概念，连接的可靠性完全由应用层保证。
 
 **2. 分帧（frameLimit）**
 
-UDP 单帧大小受 MTU 限制，过大的数据报会触发 IP 分片，增加丢失风险。Kree4X 通过 `frameLimit` 将消息切分为多个帧发送，接收端自动重组。
+UDP单帧大小受MTU限制，过大的数据报会触发IP分片，增加丢失风险。Kree4X通过 `frameLimit` 将消息切分为多个帧发送，接收端自动重组。
 
-- UDP 建议 `frameLimit: 1152`，避免 IP 分片
+- UDP建议 `frameLimit: 1152`，避免IP分片
 - 该值需在网络中的每一个节点保持一致，否则会在转发节点触发帧重组，虚耗资源
 
-**3. 帧级 ACK（ack）**
+**3. 帧级ACK（ack）**
 
-UDP 传送不可靠，Kree4X 提供可选的帧级 ACK 机制保证可靠传输：
+UDP传送不可靠，Kree4X提供可选的帧级ACK机制保证可靠传输：
 
-- `ack: true` 时，每帧发送后等待 ACK 响应，超时未收到则自动重试
-- 不启用 ack 时，无可靠性保证
+- `ack: true` 时，每帧发送后等待ACK响应，超时未收到则自动重试
+- 不启用ack时，无可靠性保证
 
 ### 二. 示例代码
 
@@ -51,7 +51,7 @@ nodeA.register('calc', {
   add (a, b) { return a + b },
   multiply (a, b) { return a * b }
 })
-// ack: true 启用帧级 ACK，保证 UDP 消息可靠到达
+// ack: true启用帧级ACK，保证UDP消息可靠到达
 nodeA.listen('udp://127.0.0.1:8060', { frameLimit: 1152, ack: true })
 
 // ── Node B（UDP客户端，注册str服务） ─────────────
@@ -65,12 +65,12 @@ nodeB.attach('udp://127.0.0.1:8060', { frameLimit: 1152, ack: true })
 await nodeA.start()
 await nodeB.start()
 
-// node-b 调用 node-a 的 calc 服务
+// node-b调用node-a的calc服务
 const calc = nodeB.service('calc')
 const addResult = await calc.add(10, 20)      // 30
 const mulResult = await calc.multiply(6, 7)   // 42
 
-// node-a 调用 node-b 的 str 服务（双向）
+// node-a调用node-b的str服务（双向）
 const str = nodeA.service('str')
 const echoResult = await str.echo('UDP works!')   // "Echo: UDP works!"
 const greetResult = await str.greet('World')        // "Hello, World! (via UDP)"
@@ -81,13 +81,13 @@ const greetResult = await str.greet('World')        // "Hello, World! (via UDP)"
 
 **1. 必须分帧**
 
-UDP 数据报大小受限，超出限制的消息必须分帧传输。
+UDP数据报大小受限，超出限制的消息必须分帧传输。
 
-不设置 `frameLimit` 或设置过大时（>1152），可能会触发 IP 分片，降低传输可靠性。
+不设置 `frameLimit` 或设置过大时（>1152），可能会触发IP分片，降低传输可靠性。
 
-**2. 可靠性由 ack 保证**
+**2. 可靠性由ack保证**
 
-UDP 本质不可靠：
+UDP本质不可靠：
 
 - 数据报可能丢包，可能乱序到达
 - Kree4X Transport传输层可保证数据帧的乱序、拖帧、粘帧重组，但是无法处理丢包
@@ -104,8 +104,8 @@ UDP 本质不可靠：
 
 ```typescript
 /**
- * 监听传入的 UDP 连接。
- * @param {string} url - 要监听的 URL，例如 "udp://127.0.0.1:8060"。
+ * 监听传入的UDP连接。
+ * @param {string} url - 要监听的URL，例如 "udp://127.0.0.1:8060"。
  * @param {{ frameLimit?: number, ack?: boolean }} [options] - 帧大小与可靠性选项。
  * @returns {this} 当前实例，用于链式调用。
  */
@@ -116,8 +116,8 @@ node.listen(url: string, options?: { frameLimit?: number, ack?: boolean }): this
 
 ```typescript
 /**
- * 通过 UDP 协议连接到远端节点。
- * @param {string} url - 要连接的 URL，例如 "udp://127.0.0.1:8060"。
+ * 通过UDP协议连接到远端节点。
+ * @param {string} url - 要连接的URL，例如 "udp://127.0.0.1:8060"。
  * @param {{ frameLimit?: number, ack?: boolean }} [options] - 帧大小与可靠性选项。
  * @returns {this} 当前实例，用于链式调用。
  */

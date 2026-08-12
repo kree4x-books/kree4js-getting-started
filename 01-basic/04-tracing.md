@@ -47,7 +47,7 @@ import Trace from '@kree4js/tracing'
 // 方法调用最后一个参数是动态注入的Context，携带了Tracer
 callee.register('calc', {
   add (a, b, ctx) {
-    // 获取 tracer，开启一个新的逻辑“phase”
+    // 获取tracer，开启一个新的逻辑“phase”
     const phase = ctx.tracer?.phase('calc.add')
     // 标记开始处理
     phase?.trace(`Start Handling ${a} + ${b}`, '', 'calc.add.start', 'detail info')
@@ -148,8 +148,8 @@ Kree4X內建“自动重试、自动Tracing”机制。
 
 ```typescript
 /**
- * 获取或设置 trace 启用标志。
- * 设为 true 时，本服务集群上之后的所有调用都会被追踪。
+ * 获取或设置trace启用标志。
+ * 设为true时，本服务集群上之后的所有调用都会被追踪。
  */
 ServiceStub.traceEnabled: boolean
 ```
@@ -160,8 +160,8 @@ ServiceStub.traceEnabled: boolean
 
 ```typescript
 /**
- * 获取最近一次服务调用的 tracer。
- * 若尚未发生过调用或追踪未启用，返回 undefined。
+ * 获取最近一次服务调用的tracer。
+ * 若尚未发生过调用或追踪未启用，返回undefined。
  */
 ServiceStub.lastTracer: Tracer
 ```
@@ -173,7 +173,7 @@ ServiceStub.lastTracer: Tracer
 ```typescript
 /**
  * 在服务实现中，最后一个参数是由框架注入的上下文。
- * 通过 ctx.tracer 访问本次调用的 tracer。
+ * 通过ctx.tracer访问本次调用的tracer。
  */
 ctx.tracer: Tracer
 ```
@@ -191,13 +191,13 @@ ctx.tracer: Tracer
 phase(name): TracePhase
 ```
 
-**5. 记录追踪事件 phase.trace()**
+**5. 记录追踪事件phase.trace()**
 
 在当前Tracer的时间线上追加一个时间事件。
 
 ```typescript
 /**
- * 在 Tracer 主时间线末尾追加一个基于时间的动作事件。
+ * 在Tracer主时间线末尾追加一个基于时间的动作事件。
  * @param {string} summary - 事件摘要。
  * @param {any} actor - 执行该动作的行为者。
  * @param {string} action - 动作名称。
@@ -207,16 +207,16 @@ phase(name): TracePhase
 phase.trace(summary: string, actor: any, action: string, ...args: any[]): TimeEvent
 ```
 
-**6. 输出Tracing时间线 tracer.output()**
+**6. 输出Tracing时间线tracer.output()**
 
 将Tracer的时间线格式化并输出。
 
 ```typescript
 /**
- * 输出 tracer 的时间线。
+ * 输出tracer的时间线。
  * @param {Formatter} formatter - 格式化器（SvgFormatter、JsonFormatter、TextFormatter）。
  * @param {Writer} [writer] - 写入器（FileWriter、ConsoleWriter、LoggerWriter）。
- * @param {any} [level] - 输出级别（如 Trace.OutputLevel.INFO）。
+ * @param {any} [level] - 输出级别（如Trace.OutputLevel.INFO）。
  * @returns {string|any} 格式化后的结果。
  */
 output(formatter, writer?, level?): string | any

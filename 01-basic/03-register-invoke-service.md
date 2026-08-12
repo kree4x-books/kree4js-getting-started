@@ -135,7 +135,7 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 
 ### 四. 涉及到的API
 
-**1. 注册服务 register()**
+**1. 注册服务register()**
 
 将一个服务实现注册到Kree4X节点。
 
@@ -151,7 +151,7 @@ Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，
 register(serviceName, serviceImpl, serviceOption?): Service
 ```
 
-**2. 注册类服务 registerClass()**
+**2. 注册类服务registerClass()**
 
 将一个类构造函数注册为服务，每次调用新建实例。
 
@@ -167,7 +167,7 @@ register(serviceName, serviceImpl, serviceOption?): Service
 registerClass(serviceName, serviceImpl, serviceOption?): Service
 ```
 
-**3. 获取服务存根 service()**
+**3. 获取服务存根service()**
 
 获取一个服务的透明代理（ServiceCluster），用于发起远程调用。
 
@@ -177,7 +177,7 @@ registerClass(serviceName, serviceImpl, serviceOption?): Service
  *
  * @param {string} name - 服务的限定名称。
  * @param {ServiceClusterOptions} [options] - 服务集群选项。
- * @param {boolean} [forceNew=false] - 是否强制创建新的 ServiceCluster。
+ * @param {boolean} [forceNew=false] - 是否强制创建新的ServiceCluster。
  * @returns {ServiceCluster} 服务集群实例。
  */
 service(name, options?, forceNew?): ServiceCluster

@@ -41,7 +41,7 @@ Kree4N，默认内置支持多种通信协议：
 - `ws://` - WebSocket， 同时支持Listen、Attach两种模式
 - 允许自定义ConnectionProvider，支持更多通信协议
 
-以下协议需要单独安装、手动注册 ConnectionProvider（不内建于 kree4n）：
+以下协议需要单独安装、手动注册ConnectionProvider（不内建于kree4n）：
 
 - `io://` - Socket.IO， 同时支持Listen、Attach两种模式
 - `kafka://` - Kafka， 仅限Attach模式
@@ -132,7 +132,7 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 /**
   * 监听传入的连接。
   *
-  * @param {string} url - 要监听的 URL。
+  * @param {string} url - 要监听的URL。
   * @param {ConnectionOptions} [options] - 连接选项。
   * @returns {this} 当前实例，用于链式调用。
   */
@@ -149,7 +149,7 @@ listen(url, options?): this;
 /**
  * 连接到远端节点。
  *
- * @param {string} url - 要连接的 URL。
+ * @param {string} url - 要连接的URL。
  * @param {ConnectionOptions} [options] - 连接选项。
  * @returns {this} 当前实例，用于链式调用。
  */
@@ -160,7 +160,7 @@ attach(url, options?): this;
 
 ```typescript
 /**
- * 启动 KreeX 实例。
+ * 启动KreeX实例。
  *
  * @param {number} [timeout=30000] - 启动超时时间（毫秒）。
  * @returns {Promise<void>}
@@ -172,7 +172,7 @@ start(timeout?: number): Promise<void>;
 
 ```typescript
 /**
- * 停止 KreeX 实例。
+ * 停止KreeX实例。
  *
  * @returns {Promise<void>}
  */

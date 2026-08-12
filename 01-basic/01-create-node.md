@@ -47,11 +47,11 @@
 // 使用KreeX For NodeJS，內建了各种NodeJS可用的扩展插件
 import Kree4n from '@kree4js/kree4n'
 
-// 方式 1：仅指定 name
+// 方式1：仅指定name
 const node1 = Kree4n.create("node-1");
 // -> node1 id: 01KZDVSWC9NRSBGW46VYEA44VZ, name: node-1
 
-// 方式 2：指定 name + description
+// 方式2：指定name + description
 const node2 = Kree4n.create("node-2", "A demo node");
 // -> node2 id: 01KZDVZ4XSZ8FM35M1GN4CZM6V, name: node-2, desc: A demo node
 
@@ -104,7 +104,7 @@ Web客户端，使用这个版本。
 
 ```typescript
 /* 
- * @param {string} name - KreeX 节点的名称。
+ * @param {string} name - KreeX节点的名称。
  * @param {string} description - 人类可读的描述。
  * @param {{
  *   worker?: { workerCount?: number, threshold?: number },

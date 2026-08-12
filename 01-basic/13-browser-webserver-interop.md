@@ -20,7 +20,7 @@
 
 **3. 浏览器信道**
 
-http-listen 提供三种受浏览器支持的信道，browser-attach 会自动协商最佳信道：
+http-listen提供三种受浏览器支持的信道，browser-attach会自动协商最佳信道：
 
 | 信道 | 方式 | 特点 |
 |------|------|------|
@@ -67,7 +67,7 @@ await node.start()
   kreex.attach('http://localhost:9000')
   await kreex.start()
 
-  // 调用服务器上的 calc 服务
+  // 调用服务器上的calc服务
   const calc = kreex.service('calc')
   const result = await calc.add(10, 20)   // 30
 </script>
@@ -81,7 +81,7 @@ await node.start()
 
 **1. Kree4B是纯客户端**
 
-浏览器无法Listen端口，浏览器节点不提供任何 Listen 能力。
+浏览器无法Listen端口，浏览器节点不提供任何Listen能力。
 
 **2. 静态文件与RPC共用端口**
 
@@ -96,36 +96,36 @@ node.listen('http://0.0.0.0:9000', { httpServer })
 
 **3. UMD构建**
 
-kree4b 的 npm 包自带 UMD 构建产物（`dist/umd/prod/index.js`），`<script>` 直接可用，无需自行打包：
+kree4b的npm包自带UMD构建产物（`dist/umd/prod/index.js`），`<script>` 直接可用，无需自行打包：
 
 ```bash
 npm install @kree4js/kree4b
 ```
 
-`server.mjs` 会自动从已安装的包中定位 UMD 文件，以 `/kree4b.js` 提供给浏览器加载。
+`server.mjs` 会自动从已安装的包中定位UMD文件，以 `/kree4b.js` 提供给浏览器加载。
 
 浏览器加载`/kree4b.js` 后，暴露全局变量 `Kree4B`。
 
-**4. Nginx 反向代理部署（生产环境）**
+**4. Nginx反向代理部署（生产环境）**
 
-本地示例使用 NodeJS创建HTTP Server，同时开放静态文件与Kree4N服务。
+本地示例使用NodeJS创建HTTP Server，同时开放静态文件与Kree4N服务。
 
 实际产品环境，一般使用 **Nginx**类软件提供静态文件服务、API网关反向代理：
 
-- Nginx 提供静态文件（client.html、kree4b.js 等）
-- Nginx 将对 kree4x 服务的调用**转发**到后端 kree4x 节点
-- 浏览器 attach 的地址是 Nginx 的地址（如 `https://ng.example.com`）
+- Nginx提供静态文件（client.html、kree4b.js等）
+- Nginx将对kree4x服务的调用**转发**到后端kree4x节点
+- 浏览器attach的地址是Nginx的地址（如 `https://ng.example.com`）
 
-kree4x 暴露的端点由 http-listen 在 `/kreex/` 前缀下注册：
+kree4x暴露的端点由http-listen在 `/kreex/` 前缀下注册：
 
 | 端点 | 方法 | 用途 |
 |------|------|------|
-| `/kreex/stream` | POST | fetch-stream 双向流式信道 |
-| `/kreex/xhr-poll` | POST（含 query） | XHR 长轮询信道 |
-| `/kreex/xhr-receive` | POST | XHR 短连接信道 |
-| `/kreex/ws` | GET（Upgrade: websocket） | WebSocket 升级 |
-| 以上任一 | HEAD | 探测后端是否为 kree4x 节点（attach 时自检） |
-| 以上任一 | OPTIONS | CORS 预检（返回 204 + `Access-Control-Allow-Origin`） |
+| `/kreex/stream` | POST | fetch-stream双向流式信道 |
+| `/kreex/xhr-poll` | POST（含query） | XHR长轮询信道 |
+| `/kreex/xhr-receive` | POST | XHR短连接信道 |
+| `/kreex/ws` | GET（Upgrade: websocket） | WebSocket升级 |
+| 以上任一 | HEAD | 探测后端是否为kree4x节点（attach时自检） |
+| 以上任一 | OPTIONS | CORS预检（返回204 + `Access-Control-Allow-Origin`） |
 
 ### 四. 涉及到的API:
 
