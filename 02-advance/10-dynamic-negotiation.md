@@ -44,9 +44,31 @@ Kree4X的协商，由**协商策略**（Advice Policy）驱动。策略决定：
 - `https`/`tls` 能力需要**证书**，无证书环境下协商必然失败
 - `wss`/`socketio` 等协议，需要配套服务端支持
 
-默认策略会依次尝试全部交集（如 http → tcp → udp → ... → wss），首次成功时终止。
+默认策略会依次尝试全部交集（如  tcp → udp → http → ... → wss），首次成功时终止。
 
-**4. 断线重连**
+**4. 监听地址与端口：限定动态监听**
+
+协商建立直连时，需要一方**开启监听**，等待另一方连接。
+
+如果一方已在监听，则另外一方直接连接即可。
+
+否则，则需要动态开启监听，这则涉及到“**监听地址**”与“**监听端口**”的问题。
+
+这个动态监听的绑定地址与端口，默认是：
+
+- 地址：`0.0.0.0` ，绑定所有网卡接口，生产环境很危险
+- 端口：操作系统随机自动分配，生产环境往往需要白名单，避免被防火前屏蔽
+
+系统功能支持动态协商时，限定监听的地址和端口：
+
+```javascript
+node.transport.limitDynamicListenAddress('127.0.0.1','10.0.1.2')      // 多个地址
+node.transport.limitDynamicListenPort(8070)                           // 固定端口
+node.transport.limitDynamicListenPort([8070, 8071])                   // 端口列表
+node.transport.limitDynamicListenPort({ min: 8070, max: 8080 })       // 端口范围
+```
+
+**5. 断线重连**
 
 因节点停止、重启、网络抖动等导致直连断开，**下一次调用会再次协商**，重新建立直连：
 
@@ -98,12 +120,17 @@ const nodeA = create('node-a', 'Service provider')
 nodeA.register('greet', {
   hello (name) { return `Hello, ${name}! (from node-a)` }
 })
+// 仅tcp协议开启动态直连
 nodeA.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+// 限定动态监听只绑定本机回环，避免默认暴露到所有网卡（0.0.0.0）
+nodeA.transport.limitDynamicListenAddress('127.0.0.1')
 nodeA.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
 
 // node-b：服务调用者，开启动态协商
 const nodeB = create('node-b', 'Service caller')
 nodeB.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+// 限制动态监听地址
+nodeB.transport.limitDynamicListenAddress('127.0.0.1')
 nodeB.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
 
 await center.start()
@@ -179,6 +206,8 @@ logger.info(`[4] node-b 已停止，直连断开：${broken}`)
 ```javascript
 const nodeB2 = create('node-b', 'Service caller (reconnected)')
 nodeB2.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+// 限制动态监听地址
+nodeB2.transport.limitDynamicListenAddress('127.0.0.1')
 nodeB2.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
 await nodeB2.start()
 
@@ -202,18 +231,18 @@ logger.info(`    重新协商完成，node-b 与 node-a 直连：${direct2}`)
 
 生产环境不需要轮询：当下一次调用时，直连已就绪，自动走直连。
 
-**3. 自定义协商策略**
+**2. 自定义协商策略**
 
 - 继承 `ProtocolMatchAdvicePolicy`，覆写 `advise()`，在父类建议列表上过滤。不是必须，但会简化实现。
 - 返回 `undefined` 表示**否决**（不建议建立直连）
 - 返回建议数组，**顺序即优先级**：array中靠前的建议先尝试
 
-**4. 断线重连的适用条件**
+**3. 断线重连的适用条件**
 
 - 模拟断线时，示例使用 `stop() + 重建节点`；真实网络抖动（拔线、进程crash）同理
 - 重连的前提，是双方仍具备协议能力交集；能力不变，重新协商自动成功
 
-**5. 仅协商一次 vs 持续可用**
+**4. 仅协商一次 vs 持续可用**
 
 动态直连建立后**持续可用**，不是每次调用都协商：
 
@@ -292,6 +321,34 @@ type ConnectionAdvice = {
   protocol?: string       // 协商协议（needsNegotiation=true 时）
   needsNegotiation: boolean // true=协商候选，false=直接地址
 }
+```
+
+**5. 限定动态监听地址与端口**
+
+```typescript
+/**
+ * 限定动态监听绑定的地址。
+ * 未设置时默认绑定 0.0.0.0（所有网卡接口），服务会暴露给所有网卡。
+ * 可传多个地址，支持链式调用。
+ *
+ * @param {...string} addresses - 允许绑定的IP地址，如 '127.0.0.1'。
+ * @returns {this} 当前节点，支持链式。
+ */
+limitDynamicListenAddress(...addresses): this
+
+/**
+ * 限定动态监听使用的端口。
+ * 不设置时，端口自动分配。
+ *
+ * @param {number|number[]|{min: number, max: number}} port - 单个端口 / 端口列表 / 端口范围。
+ * @returns {this} 当前节点，支持链式。
+ */
+limitDynamicListenPort(port): this
+```
+
+```javascript
+node.transport.limitDynamicListenAddress('127.0.0.1')
+node.transport.limitDynamicListenPort(8070)
 ```
 
 ### 五. 可运行代码

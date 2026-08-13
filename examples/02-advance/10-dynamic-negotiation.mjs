@@ -61,7 +61,9 @@ async function main () {
   nodeA.register('greet', {
     hello (name) { return `Hello, ${name}! (from node-a)` }
   })
+  // 动态协商直连时由一方动态开启监听；默认绑定0.0.0.0（所有网卡），此处限定只绑本机回环
   nodeA.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+  nodeA.transport.limitDynamicListenAddress('127.0.0.1')
   nodeA.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
   await nodeA.start()
   logger.info('node-a，已就绪（TCP，动态协商已开启）')
@@ -69,6 +71,7 @@ async function main () {
   // ── Node-B：服务调用者，开启动态协商 ──
   const nodeB = create('node-b', 'Service caller')
   nodeB.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+  nodeB.transport.limitDynamicListenAddress('127.0.0.1')
   nodeB.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
   await nodeB.start()
   logger.info('node-b，已就绪（TCP，动态协商已开启）')
@@ -97,6 +100,7 @@ async function main () {
     // 5. 重启 node-b：重新 attach 到 center，再次调用触发重新协商
     nodeB2 = create('node-b', 'Service caller (reconnected)')
     nodeB2.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+    nodeB2.transport.limitDynamicListenAddress('127.0.0.1')
     nodeB2.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
     await nodeB2.start()
 
