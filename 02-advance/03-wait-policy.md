@@ -4,7 +4,7 @@
 
 **目的与场景**
 
-在这一章，讲解如何使用 **WhoHasWaitPolicy**，为服务调用**WhoHas-IHave动态服务查找机制** 设定**截止条件**：根据何种算法、策略，认定收到的IHave应答，已满足查找条件。
+在这一章，讲解如何使用 **ServiceFindWaitPolicy**，为服务调用**WhoHas-IHave动态服务查找机制** 设定**截止条件**：根据何种算法、策略，认定收到的IHave应答，已满足查找条件。
 
 ### 一. 概念
 
@@ -26,9 +26,9 @@ Kree4X的服务调用，完全是动态的，对远端服务的存在性，不�
 
 详情，参考：[服务动态查找：WhoHas-WaitPolicy-IHave](https://zhuanlan.zhihu.com/p/2038556206382454767)
 
-**2. 设定WaitPolicy：waitWhoHas()**
+**2. 设定WaitPolicy：waitServiceFind()**
 
-获取服务存根后，通过`.waitWhoHas(policy)`可设定当前存根的WaitPolicy。
+获取服务存根后，通过`.waitServiceFind(policy)`可设定当前存根的WaitPolicy。
 
 ### 二. 示例代码
 
@@ -62,8 +62,8 @@ const callerOne = create('caller-one', '等1个提供者')
 
 // 获取服务存根
 const sensorOne = callerOne.service('sensor')
-// waitWhoHas(one)：至少1个，等待3s超时
-sensorOne.waitWhoHas(WhoHasWaitPolicy.one(3000))
+// waitServiceFind(one)：至少1个，等待3s超时
+sensorOne.waitServiceFind(ServiceFindWaitPolicy.one(3000))
 const value = await sensorOne.read()
 // 被调用的是A或者B，都有可能
 ```
@@ -80,57 +80,57 @@ const value = await sensorOne.read()
 
 **2. 何时再次触发WhoHas-Ihave？**
 
-缓存的节点失效是，会被从缓存中移除。
+缓存中的节点不足（不再满足WaitPolicy的容忍阈值）时，会**补充性触发**一次WhoHas-Ihave动态发现，合并缺失节点，同时保留缓存中存活的节点引用。
 
-当缓存中的节点数，不在满足触发WaitPolicy时，会再次触发一次WhoHas-Ihave动态发现。
+**3. 如何判定接收的IHave信号已足够？**
 
-**2. 如何判定接收的IHave信号已足够？**
+调用`ServiceFindWaitPolicy.isEnough (arrivers:Iterable<string>):boolean`，返回true，则足够。
 
-调用`WaitPolicy.isEnough (arrivers:Iterable<iHaveSignal>):boolean`，返回true，则足够。
+候选为**节点id**（IHave应答的节点、缓存中的服务节点），语义统一，见缓存复用与补充发现。
 
-**3. Wait超时**
+**4. Wait超时**
 
-WaitPolicy是WhoHasWaitPolicy的基类。
+WaitPolicy是ServiceFindWaitPolicy的基类。
 
 使用WaitPolicy(timeout:number)构造子参数timeout参数可设定等待的毫秒值。
 
-WhoHasWaitPolicy的各种构造方法中，允许指定timeout。
+ServiceFindWaitPolicy的各种构造方法中，允许指定timeout。
 
-**4. 內建的Policy**
+**5. 內建的Policy**
 
-`WhoHasWaitPolicy` 提供以下內建静态工厂方法，按需要的IHave应答数量选择：
+`ServiceFindWaitPolicy` 提供以下內建静态工厂方法，按需要的IHave应答数量选择：
 
-- `WhoHasWaitPolicy.one(timeout)`：收集到 **1个** IHave应答即认定满足。
-- `WhoHasWaitPolicy.two(timeout)`：收集到 **2个** IHave应答即认定满足。
-- `WhoHasWaitPolicy.three(timeout)`：收集到 **3个** IHave应答即认定满足。
-- `WhoHasWaitPolicy.any(timeout)`：等待满 `timeout` 毫秒，收集**所有** IHave应答（不设数量阈值）。
+- `ServiceFindWaitPolicy.one(timeout)`：收集到 **1个** IHave应答即认定满足。
+- `ServiceFindWaitPolicy.two(timeout)`：收集到 **2个** IHave应答即认定满足。
+- `ServiceFindWaitPolicy.three(timeout)`：收集到 **3个** IHave应答即认定满足。
+- `ServiceFindWaitPolicy.any(timeout)`：等待满 `timeout` 毫秒，收集**所有** IHave应答（不设数量阈值）。
 
 ### 四. 涉及到的API
 
-**1. CallerServiceCluster.waitWhoHas：设定WaitPolicy**
+**1. CallerServiceCluster.waitServiceFind：设定WaitPolicy**
 
 ```typescript
 /**
  * 为服务存根设定WhoHas查找的满足判定策略：
  * 收集到多少个IHave应答，才认定本次查找已满足需求。
  *
- * @param {WhoHasWaitPolicy} waitPolicy - 满足判定策略（阈值 + 等待时长）。
+ * @param {ServiceFindWaitPolicy} waitPolicy - 满足判定策略（阈值 + 等待时长）。
  * @returns {this} 当前存根，支持链式。
  */
-waitWhoHas(waitPolicy): this
+waitServiceFind(waitPolicy): this
 ```
 
-**2. WhoHasWaitPolicy：满足判定策略**
+**2. ServiceFindWaitPolicy：满足判定策略**
 
 ```typescript
 // 收集到1个IHave即认定满足，最多收集timeout毫秒
-WhoHasWaitPolicy.one(timeout): WhoHasWaitPolicy
+ServiceFindWaitPolicy.one(timeout): ServiceFindWaitPolicy
 // 收集到2个IHave即认定满足
-WhoHasWaitPolicy.two(timeout): WhoHasWaitPolicy
+ServiceFindWaitPolicy.two(timeout): ServiceFindWaitPolicy
 // 收集到3个IHave即认定满足
-WhoHasWaitPolicy.three(timeout): WhoHasWaitPolicy
+ServiceFindWaitPolicy.three(timeout): ServiceFindWaitPolicy
 // 等满timeout，收集所有应答
-WhoHasWaitPolicy.any(timeout): WhoHasWaitPolicy
+ServiceFindWaitPolicy.any(timeout): ServiceFindWaitPolicy
 ```
 
 ### 五. 可运行代码

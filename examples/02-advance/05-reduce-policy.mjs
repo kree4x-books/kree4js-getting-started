@@ -6,7 +6,7 @@ import { create, SelectPolicy, ReducePolicy, Transports } from '@kree4js/kree4n'
 // module vars
 Logging.setLevel('DEBUG')
 const logger = Logging.getLogger('reduce-policy')
-const { WhoHasWaitPolicy } = Transports
+const { ServiceFindWaitPolicy } = Transports
 
 const PORT_A = 8051
 const PORT_B = 8052
@@ -67,7 +67,7 @@ async function main () {
   // 归约需要多个目标，先全选再归约
   const sensor = caller.service('sensor')
   // 等待收集到3个提供者，保证SelectAll能选到全部节点
-  sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+  sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
   sensor.select(new SelectPolicy.SelectAll())
 
   try {

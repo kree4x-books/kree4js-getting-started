@@ -70,23 +70,23 @@ nodeC.register('sensor', { read () { return 30 } })
 const caller = create('caller')
 const sensor = caller.service('sensor')
 // 如何获得候选节点? 等待收集到3个提供者
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 ```
 
 **2. 单目标选择策略**
 
-每个策略演示前，都重新获取 `sensor` 服务存根（类型都是服务存根，只是设定的选择策略不同），并 `waitWhoHas(three)` 等满3个提供者：
+每个策略演示前，都重新获取 `sensor` 服务存根（类型都是服务存根，只是设定的选择策略不同），并 `waitServiceFind(three)` 等满3个提供者：
 
 ```javascript
 // SelectFirst：始终选第一个节点（等满3个，始终命中node-a）
 let sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectFirst())
 await sensor.read()   // 10，落在node-a
 
 // SelectLoop：轮询选择，从3个候选中依次挑选
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectLoop())
 await sensor.read()   // 10（node-a）
 await sensor.read()   // 20（node-b）
@@ -94,13 +94,13 @@ await sensor.read()   // 30（node-c）
 
 // SelectRandom：随机选择，从3个候选中随机挑一个
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectRandom())
 await sensor.read()   // 随机命中某个节点
 
 // SelectSticky：首次选定后，后续尽量复用同一节点
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectSticky(1))
 await sensor.read()   // 首次选定某个节点
 await sensor.read()   // 后续复用同一节点
@@ -111,13 +111,13 @@ await sensor.read()   // 后续复用同一节点
 ```javascript
 // SelectTop(2)：取前2个节点发起调用，结果用默认ReduceFirst归约
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectTop(2))
 await sensor.read()
 
 // SelectAll：全选所有节点发起调用
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(new SelectPolicy.SelectAll())
 await sensor.read()
 ```
@@ -155,7 +155,7 @@ fastestPolicy.recordResponseTime('node-a', 50)
 fastestPolicy.recordResponseTime('node-b', 30) // 最快
 fastestPolicy.recordResponseTime('node-c', 100)
 sensor = caller.service('sensor')
-sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
 sensor.select(fastestPolicy)
 await sensor.read()   // 落在node-b（响应最快）
 ```
@@ -170,7 +170,7 @@ await sensor.read()   // 落在node-b（响应最快）
 
 动态发现的IHava应答节点，作为candidates候选者，交给 `SelectPolicy.select(candidates)` 去挑选。
 
-设 `WhoHasWaitPolicy.three()` ，发现**3个**候选者，则SelectPolicy只能从中选择。
+设 `ServiceFindWaitPolicy.three()` ，发现**3个**候选者，则SelectPolicy只能从中选择。
 
 首次调用后发现的候选者，会被缓存，后续直接复用。
 

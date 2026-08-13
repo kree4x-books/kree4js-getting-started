@@ -6,7 +6,7 @@ import { create, SelectPolicy, Transports } from '@kree4js/kree4n'
 // module vars
 Logging.setLevel('DEBUG')
 const logger = Logging.getLogger('select-policy')
-const { WhoHasWaitPolicy } = Transports
+const { ServiceFindWaitPolicy } = Transports
 
 const PORT_A = 8041
 const PORT_B = 8042
@@ -18,7 +18,7 @@ const PORT_C = 8043
 //     / SelectSticky（粘性）/ SelectTop（前N个）/ SelectAll（全选）。
 //   - 通过sensor.select(policy) 设定存根的选择策略。
 //
-// 演示方式：每个存根都waitWhoHas(three) 等满3个提供者，
+// 演示方式：每个存根都waitServiceFind(three) 等满3个提供者，
 //   select只是从这3个候选节点里挑选，各策略差异一目了然。
 
 // ── 自定义SelectPolicy：按最近响应时间选最快节点 ──
@@ -81,7 +81,7 @@ async function main () {
     // 1. SelectFirst：始终选第一个节点（等满3个，始终命中node-a ≈ 10）
     logger.info('=== SelectFirst（选第一个节点）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectFirst())
     for (let i = 0; i < 3; i++) {
       logger.info(`read: ${Math.round(await sensor.read())}`)
@@ -90,7 +90,7 @@ async function main () {
     // 2. SelectLoop：轮询选择，从3个候选里依次挑选（≈ 10, 20, 30）
     logger.info('=== SelectLoop（轮询选择）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectLoop())
     for (let i = 0; i < 3; i++) {
       logger.info(`read: ${Math.round(await sensor.read())}`)
@@ -99,7 +99,7 @@ async function main () {
     // 3. SelectRandom：随机选择，从3个候选里随机挑一个
     logger.info('=== SelectRandom（随机选择）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectRandom())
     for (let i = 0; i < 3; i++) {
       logger.info(`read: ${Math.round(await sensor.read())}`)
@@ -108,7 +108,7 @@ async function main () {
     // 4. SelectSticky：首次选定后，后续尽量复用同一节点
     logger.info('=== SelectSticky(1)（粘性选择）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectSticky(1))
     for (let i = 0; i < 3; i++) {
       logger.info(`read: ${Math.round(await sensor.read())}`)
@@ -117,14 +117,14 @@ async function main () {
     // 5. SelectTop(2)：取前2个（多目标，需配合ReducePolicy归约）
     logger.info('=== SelectTop(2)（选前2个）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectTop(2))
     logger.info(`read: ${Math.round(await sensor.read())}`)
 
     // 6. SelectAll：全选（多目标，配合ReducePolicy聚合）
     logger.info('=== SelectAll（全选）===')
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(new SelectPolicy.SelectAll())
     logger.info(`read: ${Math.round(await sensor.read())}`)
 
@@ -135,7 +135,7 @@ async function main () {
     fastestPolicy.recordResponseTime('node-b', 30) // 最快
     fastestPolicy.recordResponseTime('node-c', 100)
     sensor = caller.service('sensor')
-    sensor.waitWhoHas(WhoHasWaitPolicy.three(5000))
+    sensor.waitServiceFind(ServiceFindWaitPolicy.three(5000))
     sensor.select(fastestPolicy)
     logger.info(`read: ${Math.round(await sensor.read())}`)
   } finally {

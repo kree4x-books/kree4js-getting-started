@@ -6,14 +6,14 @@ import { create, Transports } from '@kree4js/kree4n'
 // module vars
 Logging.setLevel('DEBUG')
 const logger = Logging.getLogger('wait-policy')
-const { WhoHasWaitPolicy } = Transports
+const { ServiceFindWaitPolicy } = Transports
 
 const PORT_A = 8030
 const PORT_B = 8031
 
 // 服务发现等待策略：
-//   - waitWhoHas(policy): 存根级等待——首次调用时等WhoHas收集到足够的IHave
-//     WhoHasWaitPolicy.one(n) 等1个提供者 / two(n) 等2个 / three(n) 等3个
+//   - waitServiceFind(policy): 存根级等待——首次调用时等whoHas收集到足够的IHave
+//     ServiceFindWaitPolicy.one(n) 等1个提供者 / two(n) 等2个 / three(n) 等3个
 //   注意：等待只在"本次调用"的收集窗口内有效，等不到足够提供者会直接抛错。
 
 async function main () {
@@ -47,8 +47,8 @@ async function main () {
 
     // 获取服务存根
     const sensorOne = callerOne.service('sensor')
-    // waitWhoHas(one)：至少1个，等待3s超时
-    sensorOne.waitWhoHas(WhoHasWaitPolicy.one(3000))
+    // waitServiceFind(one)：至少1个，等待3s超时
+    sensorOne.waitServiceFind(ServiceFindWaitPolicy.one(3000))
     const value = await sensorOne.read()
     logger.info(`读到: ${value}`) // 被调用的是A或者B，都有可能
   } finally {
