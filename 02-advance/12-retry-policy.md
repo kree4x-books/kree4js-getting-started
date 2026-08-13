@@ -20,11 +20,11 @@ Kree4X支持调用重试，同时还默认支持了**自动Tracing**。
 
 **1. 总调用次数：times**
 
-通过服务存根的retry()接口，设定服务调用，允许总执行次数。
+通过服务存根的retry()接口，设定服务调用允许总执行次数。
 
 `serviceStub.retry(times, interval)` ， `times` 表示**总调用次数**。
 
-`times`是包含首次调用在内的**总次数**，而非失败后重试几次。
+`times`是包含首次调用在内的**总次数**。
 
 ```javascript
 serviceStub.retry(3, 200) // 总共最多调用3次（首次 + 2次重试），间隔200ms
@@ -32,7 +32,7 @@ serviceStub.retry(3, 200) // 总共最多调用3次（首次 + 2次重试），�
 
 **2. 重试策略: Retrier**
 
-默认的 `retry(times, interval)` 是**固定间隔**（FixedInterval）的一个语法糖。
+默认的 `retry(times, interval)` 是设定**固定间隔**（FixedInterval）Retrier的一个语法糖。
 
 等同于:`retry(new FixedInterval(times,interval))`。
 
