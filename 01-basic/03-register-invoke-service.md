@@ -88,7 +88,7 @@ callee.register('calc', calculator)
 
 // 创建服务存根
 const calc = caller.service('calc')
-// 发起服务调用，获得调用结果
+// 发起服务调用，获得调用结果；ES6 Proxy，调用会被透明转发到远程
 const result = await calc.add(10, 20)
 // result: 30
 ```
@@ -122,7 +122,7 @@ Waldo在《A Note on Distributed Computing》中早已指出：远程调用不�
 
 Waldo之剑悬在头顶，任何试图抹杀远程和本地调用差别的人，都会被斩落马下。
 
-我们一直所将“透明调用”，透明的是调用方式，而不是调用语义：
+我们一直所讲“透明调用”，透明的是调用方式，而不是调用语义：
 
 - 调用一定是异步的
 - 服务存根有默认的超时控制

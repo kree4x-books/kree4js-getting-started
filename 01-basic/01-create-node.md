@@ -88,7 +88,7 @@ Web客户端，使用这个版本。
 
 **3. Kree4JS**
 
-"@kree4js/@kree4js"，是面向Javascript的通用版本，不包含任何平台特异的代码。
+"@kree4js/kree4js"，是面向Javascript的通用版本，不包含任何平台特异的代码。
 
 所以，这是个纯粹的、极简版“框架”。
 

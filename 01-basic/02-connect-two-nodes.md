@@ -110,7 +110,7 @@ nodeB.attach('ws://127.0.0.1:8084') // Attach WebSocket
 
 明确讲，**没有任何静态结构是必须的**。
 
-节点的启动顺序也不是必须的，何时listen、何时attach也无关键要。
+节点的启动顺序也不是必须的，何时listen、何时attach也无关紧要。
 
 所有的Listen、Attach、各种通信协议可以动态启停，包括节点本身也可以动态启停。
 

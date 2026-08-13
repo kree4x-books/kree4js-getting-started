@@ -34,7 +34,7 @@ Kree4X的Tracing，以单次服务调用为粒度，自动追踪Caller与Callee�
 
 ### 二. 开启Tracing
 
-在下边的示例中，我们将：
+在下边的示例中，我们将重点讲解：
 
 - 手工开启服务存根的Tracing
 - 发起服务调用
@@ -69,6 +69,7 @@ const result = await calc.add(10, 20)
 
 // 导出tracing时间线为SVG
 const tracer = calc.lastTracer
+// svg格式输出，使用框架内置FileWriter写入器
 tracer.output(new Trace.SvgFormatter(), new FileWriter('./tmp', '.svg'), Trace.OutputLevel.INFO)
 ```
 
@@ -98,9 +99,9 @@ tracer.output(new Trace.SvgFormatter(), new FileWriter('./tmp', '.svg'), Trace.O
 
 点击一个Action，会以此Action为中心自动对中，并显示Action详情。
 
-点击一个分支时间线，会自动调整到分支时间线起始
+点击一个分支时间线，会自动调整到分支时间线起始。
 
-……
+各种其他交互，……
 
 **2. 业务方法内部如何Tracing？**
 
