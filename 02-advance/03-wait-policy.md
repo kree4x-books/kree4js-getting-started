@@ -135,5 +135,5 @@ ServiceFindWaitPolicy.any(timeout): ServiceFindWaitPolicy
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[03-wait-policy.mjs](../examples/02-advance/03-wait-policy.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/03-wait-policy.mjs" target="_blank">03-wait-policy.mjs</a>
 

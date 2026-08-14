@@ -169,4 +169,4 @@ type ConnectionOptions = {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[06-data-framing.mjs](../examples/02-advance/06-data-framing.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/06-data-framing.mjs" target="_blank">06-data-framing.mjs</a>

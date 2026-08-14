@@ -183,4 +183,4 @@ console.log(fileReader.name, fileReader.size)
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[14-streaming-data.mjs](../examples/01-basic/14-streaming-data.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/14-streaming-data.mjs" target="_blank">14-streaming-data.mjs</a>

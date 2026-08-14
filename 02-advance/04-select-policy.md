@@ -250,4 +250,4 @@ class SelectPolicy {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[04-select-policy.mjs](../examples/02-advance/04-select-policy.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/04-select-policy.mjs" target="_blank">04-select-policy.mjs</a>

@@ -229,4 +229,4 @@ const nodeB = create('node-b', 'UDP bridge node', { transport: { proxyMode: true
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[09-heterogeneous-grid.mjs](../examples/02-advance/09-heterogeneous-grid.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/09-heterogeneous-grid.mjs" target="_blank">09-heterogeneous-grid.mjs</a>

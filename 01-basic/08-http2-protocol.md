@@ -149,4 +149,4 @@ node.attach(url: string, options?: { rejectUnauthorized?: boolean }): this
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[08-http2-protocol.mjs](../examples/01-basic/08-http2-protocol.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/08-http2-protocol.mjs" target="_blank">08-http2-protocol.mjs</a>

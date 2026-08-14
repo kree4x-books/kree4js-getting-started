@@ -211,4 +211,4 @@ class ReducePolicy {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[05-reduce-policy.mjs](../examples/02-advance/05-reduce-policy.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/05-reduce-policy.mjs" target="_blank">05-reduce-policy.mjs</a>

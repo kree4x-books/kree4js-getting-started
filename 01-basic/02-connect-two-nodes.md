@@ -181,4 +181,4 @@ stop(): Promise<void>;
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[02-connect-two-nodes.mjs](../examples/01-basic/02-connect-two-nodes.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/02-connect-two-nodes.mjs" target="_blank">02-connect-two-nodes.mjs</a>

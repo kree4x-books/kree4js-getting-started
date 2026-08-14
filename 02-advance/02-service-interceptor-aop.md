@@ -293,4 +293,4 @@ class ServiceCallContext {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[02-service-interceptor-aop.mjs](../examples/02-advance/02-service-interceptor-aop.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/02-service-interceptor-aop.mjs" target="_blank">02-service-interceptor-aop.mjs</a>

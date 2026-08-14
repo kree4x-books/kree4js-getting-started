@@ -298,4 +298,4 @@ class ServiceCallResult extends TransferableAnswerThing {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[01-data-pipeline.mjs](../examples/02-advance/01-data-pipeline.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/01-data-pipeline.mjs" target="_blank">01-data-pipeline.mjs</a>

@@ -155,4 +155,4 @@ service.order(food, (err, result) => {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[15-dsc-distributed-callback.mjs](../examples/01-basic/15-dsc-distributed-callback.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/15-dsc-distributed-callback.mjs" target="_blank">15-dsc-distributed-callback.mjs</a>

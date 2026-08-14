@@ -114,4 +114,4 @@ node.attach(url: string): this
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[10-websocket-protocol.mjs](../examples/01-basic/10-websocket-protocol.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/10-websocket-protocol.mjs" target="_blank">10-websocket-protocol.mjs</a>

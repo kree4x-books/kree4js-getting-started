@@ -225,4 +225,4 @@ output(formatter, writer?, level?): string | any
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[04-tracing.mjs](../examples/01-basic/04-tracing.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/04-tracing.mjs" target="_blank">04-tracing.mjs</a>

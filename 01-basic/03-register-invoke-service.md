@@ -185,4 +185,4 @@ service(name, options?, forceNew?): ServiceCluster
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[03-register-invoke-service.mjs](../examples/01-basic/03-register-invoke-service.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/03-register-invoke-service.mjs" target="_blank">03-register-invoke-service.mjs</a>

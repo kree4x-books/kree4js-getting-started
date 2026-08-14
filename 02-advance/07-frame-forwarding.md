@@ -152,4 +152,4 @@ type TransportOptions = {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[07-frame-forwarding.mjs](../examples/02-advance/07-frame-forwarding.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/07-frame-forwarding.mjs" target="_blank">07-frame-forwarding.mjs</a>

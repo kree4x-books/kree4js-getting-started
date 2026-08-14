@@ -8,7 +8,7 @@
 
 但**跨协议、非直连的调用，要经桥接节点转发**，链路每多一跳，就多一份延迟与开销。
 
-在这一章，讲解如何**开启通信协商**，让支持共同通信协议的节点，在首次调用时自动协商、建立**动态直连**。
+在这一章，讲解如何**开启通信协商**，驱使间接可达的节点，如果支持共同通信协议，在首次调用时自动协商、建立**动态直连**。
 
 以及当节点重启、网络抖动等原因，直连断开后，下一次调用能自动**重新协商**，恢复直连。
 
@@ -44,7 +44,7 @@ Kree4X的协商，由**协商策略**（Advice Policy）驱动。策略决定：
 - `https`/`tls` 能力需要**证书**，无证书环境下协商必然失败
 - `wss`/`socketio` 等协议，需要配套服务端支持
 
-默认策略会依次尝试全部交集（如  tcp → udp → http → ... → wss），首次成功时终止。
+默认策略会**一次携带全部交集协议**（有序列表，如 tcp → udp → http → ... → wss），按顺序尝试、首次成功时终止；也可用 `useDynamicConnectionProtocols()` 白名单限定候选协议及顺序（见示例）。
 
 **4. 监听地址与端口：限定动态监听**
 
@@ -62,7 +62,7 @@ Kree4X的协商，由**协商策略**（Advice Policy）驱动。策略决定：
 系统功能支持动态协商时，限定监听的地址和端口：
 
 ```javascript
-node.transport.limitDynamicListenAddress('127.0.0.1','10.0.1.2')      // 多个地址
+node.transport.limitDynamicListenAddress('127.0.0.1', '10.0.1.2')      // 多个地址
 node.transport.limitDynamicListenPort(8070)                           // 固定端口
 node.transport.limitDynamicListenPort([8070, 8071])                   // 端口列表
 node.transport.limitDynamicListenPort({ min: 8070, max: 8080 })       // 端口范围
@@ -83,46 +83,34 @@ node.transport.limitDynamicListenPort({ min: 8070, max: 8080 })       // 端口�
 - node-b：服务调用者，开启动态协商
 - center：网格中心（proxyMode中继），node-a/node-b 均 attach 到 center
 
-**1. 自定义协商策略：只协商 tcp**
+**1. 限定协商协议：白名单 + 优先顺序**
 
-示例用一个自定义策略 `TcpOnlyAdvicePolicy`，继承默认策略并在建议列表中**过滤掉非tcp协议**：
+开启动态协商后，默认策略会把双方共同支持的**全部协议**（http/https/tcp/tls/...）都列为协商候选。
+
+使用 `useDynamicConnectionProtocols()` 可以指定协商时，允许的**协议白名单及其优先顺序**：
 
 ```javascript
-// 只支持tcp协议的自定义协商
-class TcpOnlyAdvicePolicy extends ProtocolMatchAdvicePolicy {
-  advise (ctx, targetNodeId, currentAdvices = []) {
-    const advices = super.advise(ctx, targetNodeId, currentAdvices)
-    if (advices == null) return undefined
-    return advices.filter(advice => {
-      if (advice.needsNegotiation) {
-        return advice.protocol === 'tcp'
-      }
-      return advice.url != null && advice.url.startsWith('tcp://')
-    })
-  }
-}
-
-// 只允许本机回环地址直连的自定义协商
-// 注意：super.advise() 会基于能力重新生成全部协议候选（http/https/tls/...），
-// 因此 needsNegotiation 分支同样需过滤协议，否则 tls/https 会在无证书环境下尝试失败。
-class LanOnlyAdvicePolicy extends ProtocolMatchAdvicePolicy {
-  advise (ctx, targetNodeId, currentAdvices = []) {
-    const advices = super.advise(ctx, targetNodeId, currentAdvices)
-    if (advices == null) return undefined
-    return advices.filter(advice => {
-      if (advice.needsNegotiation) {
-        return advice.protocol === 'tcp'
-      }
-      return advice.url != null && advice.url.startsWith('tcp://127.0.0.1')
-    })
-  }
-}
+node.useDynamicConnectionProtocols(['tcp'])               // 只协商 tcp
+node.useDynamicConnectionProtocols(['tcp', 'ws'])         // 白名单 + 优先顺序：tcp 优先，失败再 ws
+node.useDynamicConnectionProtocols(undefined)             // 清除配置，回退默认（全部共同协议）
 ```
 
-advise()，返回的“**协商建议**”，包含两种场景：
+白名单语义：
 
-- `needsNegotiation: true` ，需要一方Listen，要动态**协商候选**，决定谁来Listen，谁来Attach
-- `needsNegotiation: false` 的建议，一方已经在Listen，不需要协商，直接连接即可
+- **两端生效**：双方都可设置白名单，实际可协商的为双方白名单的交集
+
+- **尝试顺序以发起方为准**：发起方按自己白名单的顺序携带协议，响应方按该顺序尝试 listen，首个成功即建立
+
+- **未配置的一方 = 无限制**：不设置白名单，则代表无协议限制。
+
+- **白名单设定了服务节点不支持的协议**：仅日志输出警告，然后跳过
+
+  
+
+advise()，返回的"**协商建议**"，包含两种场景：
+
+- `needsNegotiation: true`，需要一方开启Listen，要动态**协商候选**，决定谁来Listen，谁来Attach
+- `needsNegotiation: false` ，一方已经在Listen，不需要协商，直接连接即可
 
 **2. 组建网格：center + 两个协商节点**
 
@@ -136,15 +124,19 @@ const nodeA = create('node-a', 'Service provider')
 nodeA.register('greet', {
   hello (name) { return `Hello, ${name}! (from node-a)` }
 })
-// 单行传入多个策略：AND语义，全部通过才建议直连（tcp + 仅本机回环地址）
-nodeA.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy(), new LanOnlyAdvicePolicy())
+// 开启动态协商功能
+nodeA.transport.enableDynamicConnection()
+// 协议白名单，设定允许的通信协议，及其顺序
+nodeA.useDynamicConnectionProtocols(['tcp'])
+
 // 限定动态监听只绑定本机回环，避免默认暴露到所有网卡（0.0.0.0）
 nodeA.transport.limitDynamicListenAddress('127.0.0.1')
 nodeA.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
 
 // node-b：服务调用者，开启动态协商
 const nodeB = create('node-b', 'Service caller')
-nodeB.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy(), new LanOnlyAdvicePolicy())
+nodeB.useDynamicConnectionProtocols(['tcp'])
+nodeB.transport.enableDynamicConnection()
 // 限制动态监听地址
 nodeB.transport.limitDynamicListenAddress('127.0.0.1')
 nodeB.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
@@ -179,7 +171,7 @@ async function waitDirect (node, targetId, timeoutMs = 8000, expectDirect = true
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
     if (node.transport.grid.hasDirectChannel(targetId) === expectDirect) return true
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await PromiseUtils.delay(100)
   }
   return false
 }
@@ -204,6 +196,8 @@ logger.info(`[3] node-b → node-a.greet.hello('Again') = ${await greet.hello('A
 停止 node-b，直连随即断开：
 
 ```javascript
+// 停止前留时间让直连数据链路稳定（断线检测与动态监听清理需要时间）
+await PromiseUtils.delay(100)
 await nodeB.stop()
 const broken = await waitDirect(nodeA, nodeB.id, 8000, false)
 logger.info(`[4] node-b 已停止，直连断开：${broken}`)
@@ -221,7 +215,8 @@ logger.info(`[4] node-b 已停止，直连断开：${broken}`)
 
 ```javascript
 const nodeB2 = create('node-b', 'Service caller (reconnected)')
-nodeB2.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+nodeB2.useDynamicConnectionProtocols(['tcp'])
+nodeB2.transport.enableDynamicConnection()
 // 限制动态监听地址
 nodeB2.transport.limitDynamicListenAddress('127.0.0.1')
 nodeB2.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
@@ -247,16 +242,21 @@ logger.info(`    重新协商完成，node-b 与 node-a 直连：${direct2}`)
 
 生产环境不需要轮询：当下一次调用时，直连已就绪，自动走直连。
 
-**2. 自定义协商策略**
+**2. 自定义协商策略（高级）**
 
-- 继承 `ProtocolMatchAdvicePolicy`，覆写 `advise()`，在父类建议列表上过滤。不是必须，但会简化实现。
+多数场景用 `useDynamicConnectionProtocols()` 白名单即可，无需自定义策略。
+
+需要更精细的控制，如按节点/按地址进行控制，再自定义：
+
+- 继承 `ProtocolMatchAdvicePolicy`，覆写 `advise()`。在父类建议列表上过滤，不是必须，但可简化实现。
 - 返回 `undefined` 表示**否决**（不建议建立直连）
 - 返回建议数组，**顺序即优先级**：array中靠前的建议先尝试
+- 注意：协商候选建议（`needsNegotiation: true`）携带的是 **`protocols` 有序数组**
 
 **3. 断线重连的适用条件**
 
-- 模拟断线时，示例使用 `stop() + 重建节点`；真实网络抖动（拔线、进程crash）同理
-- 重连的前提，是双方仍具备协议能力交集；能力不变，重新协商自动成功
+- 模拟断线时，示例使用 `stop() + 重建节点`模拟网络抖动
+- 重连的前提，是双方仍具备协议能力交集。能力不变，重新协商自会成功
 
 **4. 仅协商一次 vs 持续可用**
 
@@ -283,14 +283,13 @@ enableDynamicConnection(...policies): this
 ```
 
 ```javascript
-// 默认策略
+// 开启动态协商，默认支持所有协议
 node.transport.enableDynamicConnection()
+// 自定义策略（多个策略按 AND 语义评估，全部通过才建议直连）
+node.transport.enableDynamicConnection(myPolicyA, myPolicyB)
 
-// 自定义单策略
-node.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
-
-// 单行传入多个策略：AND语义，全部通过才建议直连
-node.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy(), new LanOnlyAdvicePolicy())
+// 限定可协商协议范围
+node.useDynamicConnectionProtocols(['tcp'])
 ```
 
 **2. 关闭动态协商**
@@ -313,7 +312,7 @@ disableDynamicConnection(): this
  * @param {string} targetNodeId - 目标节点ID。
  * @returns {boolean} 存在直连返回 true。
  */
-grid.hasDirectChannel(targetNodeId): boolean
+kree4x.transport.grid.hasDirectChannel(targetNodeId): boolean
 ```
 
 **4. 协商策略基类**
@@ -337,12 +336,35 @@ abstract class DynamicConnectionAdvicePolicy {
 // 建议项结构
 type ConnectionAdvice = {
   url?: string            // 直接地址（needsNegotiation=false 时）
-  protocol?: string       // 协商协议（needsNegotiation=true 时）
+  protocol?: string       // 已废弃：旧单协议形态（向后兼容保留）
+  protocols?: string[]    // 协商候选的有序协议列表（needsNegotiation=true 时，优先于 protocol）
   needsNegotiation: boolean // true=协商候选，false=直接地址
 }
 ```
 
-**5. 限定动态监听地址与端口**
+**5. 限定协商协议：白名单 + 优先顺序**
+
+```typescript
+/**
+ * 限定动态直连协商的协议白名单及其优先顺序。
+ * 只允许白名单内协议参与协商（发起方、响应方两端生效），且按白名单顺序优先。
+ * 传 null/undefined 清除配置，回退默认行为（全部共同协议，按能力顺序）。
+ * 参数非数组时抛错；含本地不支持（未注册 capability）的协议时仅打 warn。
+ * 重复协议自动去重。
+ *
+ * @param {string[]|null|undefined} protocols - 有序协议白名单。
+ * @returns {this} 当前节点，支持链式。
+ */
+useDynamicConnectionProtocols(protocols): this
+```
+
+```javascript
+node.useDynamicConnectionProtocols(['tcp'])
+node.useDynamicConnectionProtocols(['tcp', 'ws'])
+node.useDynamicConnectionProtocols(undefined) // 清除白名单
+```
+
+**6. 限定动态监听地址与端口**
 
 ```typescript
 /**
@@ -356,20 +378,40 @@ type ConnectionAdvice = {
 limitDynamicListenAddress(...addresses): this
 
 /**
- * 限定动态监听使用的端口。
- * 不设置时，端口自动分配。
+ * 限定动态监听使用的端口：单个固定端口。
+ * 不设置时，端口自动分配；支持链式调用。
  *
- * @param {number|number[]|{min: number, max: number}} port - 单个端口 / 端口列表 / 端口范围。
+ * @param {number} port - 单个端口，如 8070。
  * @returns {this} 当前节点，支持链式。
  */
-limitDynamicListenPort(port): this
+limitDynamicListenPort(port: number): this
+
+/**
+ * 限定动态监听使用的端口：端口列表。
+ * 端口从列表内随机分配；不设置时自动分配；支持链式调用。
+ *
+ * @param {number[]} port - 端口列表，如 [8070, 8071]。
+ * @returns {this} 当前节点，支持链式。
+ */
+limitDynamicListenPort(port: number[]): this
+
+/**
+ * 限定动态监听使用的端口：端口范围。
+ * 端口在范围内分配；不设置时自动分配；支持链式调用。
+ *
+ * @param {{min: number, max: number}} port - 端口范围，如 { min: 8070, max: 8080 }。
+ * @returns {this} 当前节点，支持链式。
+ */
+limitDynamicListenPort(port: { min: number, max: number }): this
 ```
 
 ```javascript
 node.transport.limitDynamicListenAddress('127.0.0.1')
 node.transport.limitDynamicListenPort(8070)
+node.transport.limitDynamicListenPort([8070, 8071])
+node.transport.limitDynamicListenPort({ min: 8070, max: 8080 })
 ```
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[10-dynamic-negotiation.mjs](../examples/02-advance/10-dynamic-negotiation.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/10-dynamic-negotiation.mjs" target="_blank">10-dynamic-negotiation.mjs</a>

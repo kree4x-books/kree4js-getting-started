@@ -109,6 +109,6 @@ service(name): ServiceCluster
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[05-peer-register-invoke.mjs](../examples/01-basic/05-peer-register-invoke.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/05-peer-register-invoke.mjs" target="_blank">05-peer-register-invoke.mjs</a>
 
 

@@ -127,4 +127,4 @@ function create(name: string, description: string, options?: {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[01-create-node.mjs](../examples/01-basic/01-create-node.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/01-create-node.mjs" target="_blank">01-create-node.mjs</a>

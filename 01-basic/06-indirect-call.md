@@ -109,5 +109,5 @@ Kree4n.create(name: string, description?: string, options?: { transport?: { prox
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[06-indirect-call.mjs](../examples/01-basic/06-indirect-call.mjs)
+完整示例代码，参见：<a href="../examples/01-basic/06-indirect-call.mjs" target="_blank">06-indirect-call.mjs</a>
 

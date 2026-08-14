@@ -306,4 +306,4 @@ retrier.onCompleted(fn)       // 全部结束
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[12-retry-policy.mjs](../examples/02-advance/12-retry-policy.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/12-retry-policy.mjs" target="_blank">12-retry-policy.mjs</a>

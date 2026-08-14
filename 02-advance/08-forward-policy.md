@@ -242,4 +242,4 @@ class ForwardPolicy {
 
 ### 五. 可运行代码
 
-完整示例代码，参见：[08-forward-policy.mjs](../examples/02-advance/08-forward-policy.mjs)
+完整示例代码，参见：<a href="../examples/02-advance/08-forward-policy.mjs" target="_blank">08-forward-policy.mjs</a>
