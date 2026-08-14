@@ -28,6 +28,23 @@ class TcpOnlyAdvicePolicy extends ProtocolMatchAdvicePolicy {
   }
 }
 
+// 只允许本机回环地址直连的策略：
+// 与 TcpOnlyAdvicePolicy 组合使用时按 AND 语义评估（全部通过才建议直连）。
+// 注意：super.advise() 会基于能力重新生成全部协议候选（http/https/tls/...），
+// 因此 needsNegotiation 分支同样需过滤协议，否则 tls/https 会在无证书环境下尝试失败。
+class LanOnlyAdvicePolicy extends ProtocolMatchAdvicePolicy {
+  advise (ctx, targetNodeId, currentAdvices = []) {
+    const advices = super.advise(ctx, targetNodeId, currentAdvices)
+    if (advices == null) return undefined
+    return advices.filter(advice => {
+      if (advice.needsNegotiation) {
+        return advice.protocol === 'tcp'
+      }
+      return advice.url != null && advice.url.startsWith('tcp://127.0.0.1')
+    })
+  }
+}
+
 // 动态链路：开启通信协商，支持动态链路直连与断线重连
 //
 // 拓扑:
@@ -62,7 +79,8 @@ async function main () {
     hello (name) { return `Hello, ${name}! (from node-a)` }
   })
   // 动态协商直连时由一方动态开启监听；默认绑定0.0.0.0（所有网卡），此处限定只绑本机回环
-  nodeA.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+  // 单行传入多个策略：AND语义，全部通过才建议直连（tcp + 仅本机回环地址）
+  nodeA.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy(), new LanOnlyAdvicePolicy())
   nodeA.transport.limitDynamicListenAddress('127.0.0.1')
   nodeA.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
   await nodeA.start()
@@ -70,7 +88,7 @@ async function main () {
 
   // ── Node-B：服务调用者，开启动态协商 ──
   const nodeB = create('node-b', 'Service caller')
-  nodeB.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy())
+  nodeB.transport.enableDynamicConnection(new TcpOnlyAdvicePolicy(), new LanOnlyAdvicePolicy())
   nodeB.transport.limitDynamicListenAddress('127.0.0.1')
   nodeB.attach(`tcp://127.0.0.1:${PORT_CENTER}`)
   await nodeB.start()
