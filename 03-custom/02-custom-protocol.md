@@ -65,7 +65,7 @@ TCP、UDP等网络协议是通信协议，操作系统管道也是通信协议�
 > 注意：此示例无任何生产级意义，未经完善的覆盖测试、未经平台兼容性测试
 >
 
-**0. socket路径生成**
+**1. socket路径生成**
 
 `ipc://<pipeName>`创建的NetPoint，其`netPoint.hostname`对应的`pipeName`（管道名）。
 
@@ -81,7 +81,7 @@ function buildSockPath (pipeName) {
 }
 ```
 
-**1. 定义提供者**
+**2. 连接提供者：ConnectionProvider**
 
 ```javascript
 // 连接提供者：继承框架基类，接入Kree4X的Provider体系
@@ -117,7 +117,7 @@ class IpcConnectionProvider extends ConnectionProvider {
 }
 ```
 
-**2. 定义服务端连接**
+**3. 定义服务端连接**
 
 listen侧继承`ListenConnection`，使用`node:net`的`createServer()`创建node:net server。
 
@@ -186,7 +186,7 @@ class IpcListenConnection extends ListenConnection {
 }
 ```
 
-**3. 定义客户端连接**
+**4. 定义客户端连接**
 
 attach侧继承`AttachConnection`，用`net.connect()`连接socket文件：
 
@@ -233,7 +233,7 @@ class IpcAttachConnection extends AttachConnection {
 }
 ```
 
-**4. 定义两侧信道**
+**5. 定义两侧信道**
 
 attach侧信道继承`OutgoingChannel`，listen侧信道继承`IncomingChannel`，都只实现底层写入：`socket.write()`发送，`socket.destroy()`关闭：
 
@@ -291,7 +291,7 @@ class IpcIncomingChannel extends IncomingChannel {
 }
 ```
 
-**5. 注册并使用**
+**6. 注册并使用**
 
 ```javascript
 // node-a：listen侧节点，注册服务
