@@ -42,6 +42,8 @@ Kree4JS，是Kree4X的Javascript语言版本实现。
 
 **为了，且仅为了**，这一个目标。
 
+详情，可参阅：[AI持有契约：Schema In AI，Not Service](https://zhuanlan.zhihu.com/p/2068345562911527586)
+
 为了这一个目标，进行特异化设计。一切为了AI编程而优化，AI First，AI Native。
 
 虽然，客观导致，人类程序员使用Kree4X进行开发，也会更容易理解、更容易编写、更容易维护，但是，这是副作用，不是我们的起意和原始意图。
