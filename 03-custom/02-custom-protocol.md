@@ -300,7 +300,7 @@ const nodeA = Kree4N.create('node-a', '服务端节点')
 nodeA.useConnectionProvider(new IpcConnectionProvider())
 // 以listen模式监听该URL，创建socket文件
 nodeA.listen('ipc://greet')
-nodeA.register('greet', {
+nodeA.register('greeter', {
   hello (name) {
     return `Hello ${name}`
   }
@@ -318,8 +318,8 @@ await nodeB.start()
 // 等待网格传播：让两侧发现彼此的服务
 await new Promise(resolve => setTimeout(resolve, 300))
 
-// node-b通过ipc://直连调用node-a的greet.hello
-const result = await nodeB.service('greet').hello('ipc-direct')
+// node-b通过ipc://直连调用node-a的greeter.hello
+const result = await nodeB.service('greeter').hello('ipc-direct')
 // Hello ipc-direct
 ```
 
@@ -333,7 +333,7 @@ const result = await nodeB.service('greet').hello('ipc-direct')
 两者必须一致：
 
 - `understands()`判定`protocol === 'ipc'`
-- ``capability()`就要声明`{ attach: ['ipc'], listen: ['ipc'] }
+- `capability()`就要声明`{ attach: ['ipc'], listen: ['ipc'] }
 - 不一致时，可能导致动态直连协商失败
 
 **2. 协议名与URL解析**
@@ -348,7 +348,7 @@ const result = await nodeB.service('greet').hello('ipc-direct')
 - underlying属性，必须存在，示例中是net.socket实例
 - boundPort可选，例如TCP Listen不指定端口，系统会随机分配，可获取实际分配参数后，保存在此处
 
-**5. listen侧要实现的钩子**
+**4. listen侧要实现的钩子**
 
 - `_isMonoFrameSupported()`：是否单帧mono frame模式，一次data事件是否恰好是一个完整frame。返回`false`，则由框架负责帧重组。
 - `_getIncomingConnectEvents()`：server上"新接入"的事件名（这里`['connection']`）
@@ -357,13 +357,13 @@ const result = await nodeB.service('greet').hello('ipc-direct')
 - `_createChannel(channelUnderlying)`：基于channelUnderlying，创建`IncomingChannel`
 - `_destroyServer(server)`：关闭时清理
 
-**6. attach与listen的时序问题**
+**5. attach与listen的时序问题**
 
 `net.connect()`连接：attach时，若socket文件不存在，会触发`'error'`事件，`_connect()`抛错。
 
 框架本身有重连/等待机制，连接失败时，等待即可，自会恢复。
 
-**7. 底层通道形态不限**
+**6. 底层通道形态不限**
 
 `_connect()`/`_createServer()`返回的底层对象可以是任意可收发字节的对象
 

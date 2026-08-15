@@ -356,7 +356,7 @@ async function main () {
   nodeA.useConnectionProvider(new IpcConnectionProvider())
   // 以listen模式监听该URL，创建socket文件
   nodeA.listen('ipc://greet')
-  nodeA.register('greet', {
+  nodeA.register('greeter', {
     hello (name) {
       return `Hello ${name}`
     }
@@ -377,7 +377,7 @@ async function main () {
   await new Promise(resolve => setTimeout(resolve, 300))
 
   // node-b通过ipc://直连调用node-a的服务
-  const result = await nodeB.service('greet').hello('ipc-direct')
+  const result = await nodeB.service('greeter').hello('ipc-direct')
   logger.info(`[ipc] 跨节点调用成功: ${result}`)
 
   await ExecUtils.quiet(() => nodeB.stop(), logger)

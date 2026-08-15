@@ -33,7 +33,7 @@ Kree4X内置了消息转发机制，只需在Hub节点开启`proxyMode`，即可
 import Kree4n from '@kree4js/kree4n'
 
 // Hub节点：开启转发模式，监听端口
-const hub = const hub = Kree4n.create('hub', 'CentralHub', { transport: { proxyMode: true } })
+const hub = Kree4n.create('hub', 'CentralHub', { transport: { proxyMode: true } })
 hub.listen('tcp://127.0.0.1:8010')
 
 // Leaf1：注册服务，连接到Hub
