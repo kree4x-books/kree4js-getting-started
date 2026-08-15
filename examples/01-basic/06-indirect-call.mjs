@@ -29,7 +29,8 @@ const logger = Logging.getLogger('indirect-call')
  */
 async function main () {
   // ── Hub Node（中心转发节点） ──────────────────────
-  const hub = Kree4n.create('hub')
+  // proxyMode: true 让 hub 开启转发模式，才能把 leafNode2 的 RPC 转发到 leafNode1
+  const hub = Kree4n.create('hub', undefined, { transport: { proxyMode: true } })
   hub.listen('tcp://127.0.0.1:8010')
 
   // ── Leaf Node 1（后端服务，连接Hub） ──────────────
