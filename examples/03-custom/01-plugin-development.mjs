@@ -88,6 +88,12 @@ async function main () {
   // ── node-a：挂载插件，监听TCP ──
   const nodeA = Kree4N.create('node-a', '主机A')
   nodeA.usePlugin(new StatusPlugin('A'))
+  // node-a 独占注册 greet 服务（StatusPlugin 的 status 每个节点都有，greet 只有 node-a 有）
+  nodeA.register('greet', {
+    hello (name) {
+      return `Hello ${name}`
+    }
+  })
   nodeA.listen(`tcp://127.0.0.1:${PORT}`)
   await nodeA.start()
   logger.info('node-a，已就绪')
@@ -102,13 +108,13 @@ async function main () {
   // 等网格事件传播
   await new Promise(resolve => setTimeout(resolve, 200))
 
-  // 1. 调用 status：每个节点都装了 StatusPlugin，service() 按集群选择目标节点
+  // 1. 调用 status：每个节点都装了 StatusPlugin，service() 按集群选择目标节点（可能落在本地）
   const statusOne = await nodeB.service('status').status()
   logger.info(`[1] node-b 调用 status：${JSON.stringify(statusOne)}`)
 
-  // 2. 从 node-a 再调一次，被调节点的插件入站拦截器会打印 收到调用
-  const statusTwo = await nodeA.service('status').status()
-  logger.info(`[2] node-a 调用 status：${JSON.stringify(statusTwo)}`)
+  // 2. 调用仅 node-a 注册的 greet：唯一持有者必路由到 node-a（远程），其入站拦截器会打印 收到调用
+  const greeting = await nodeB.service('greet').hello('reader')
+  logger.info(`[2] node-b 调用 greet：${greeting}`)
 
   // 3. 动态加入：不带插件的 node-c 加入网格
   const nodeC = Kree4N.create('node-c', '临时节点')

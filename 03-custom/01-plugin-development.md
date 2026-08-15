@@ -109,6 +109,12 @@ class StatusPlugin {
 const nodeA = Kree4N.create('node-a', '主机A')
 // 注入插件
 nodeA.usePlugin(new StatusPlugin('A'))
+// node-a 独占注册 greet 服务（StatusPlugin 的 status 每个节点都有，greet 只有 node-a 有）
+nodeA.register('greet', {
+  hello (name) {
+    return `Hello ${name}`
+  }
+})
 nodeA.listen(`tcp://127.0.0.1:8130`)
 await nodeA.start()
 
@@ -119,11 +125,14 @@ nodeB.usePlugin(new StatusPlugin('B'))
 nodeB.attach(`tcp://127.0.0.1:8130`)
 await nodeB.start()
 
-// 1. 获取nodeB开放的status服务存根
+// 1. 调用 status：每个节点都装了 StatusPlugin，service() 按集群选择目标节点（可能落在本地）
 const status = await nodeB.service('status').status()
-// 被调节点的入站拦截器会打印：收到调用: status.status
 
-// 2. node-c 加入网格
+// 2. 调用仅 node-a 注册的 greet：唯一持有者必路由到 node-a（远程），其入站拦截器会打印
+const greeting = await nodeB.service('greet').hello('reader')
+// node-a 的插件会打印：收到调用: greet.hello
+
+// 3. node-c 加入网格
 const nodeC = Kree4N.create('node-c', '临时节点')
 nodeC.attach(`tcp://127.0.0.1:8130`)
 await nodeC.start()
