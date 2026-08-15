@@ -54,9 +54,8 @@ nodeA.setStreamReceiverFactory(new MyReceiverFactory())
 
 Receiver应根据seq动态计算写入位置，支持随机写入。
 
-- `seq`：**块在流内的序号**，从0起递增。同一流内，块按`seq`排序即为完整流数据
-- `pdu`：块数据
-- 序号乱序或缺失，可通过`seq`检测
+- `seq:number`：**块在流内的序号**，从0起递增。同一流内，块按`seq`排序即为完整流数据
+- `pdu:Uint8Array`：块数据
 
 **5. 数据块的大小：chunkLimit**
 
@@ -64,7 +63,7 @@ Receiver应根据seq动态计算写入位置，支持随机写入。
 
 通过`StreamReceiver.chunkLimit`，可以获知这个固定的块大小，字节数。
 
-通过比较pdu.byteLength与chunkLimit，即可知当前chunk是否是流的尾块，结合seq，可支持当前块在整个流中的随机位置计算。
+通过比较pdu.byteLength与chunkLimit，即可知当前chunk是否是流的尾块，结合seq，可支持随机写存储时，计算偏移位置。
 
 ### 二. 示例代码
 
