@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { Retrier } from '@kree4js/commons-retrier'
 import { create } from '@kree4js/kree4n'
@@ -110,6 +110,7 @@ async function main () {
     logger.info(`[6] retry成功：${pongTrace}；${flaky.calls}次尝试`)
     logger.info(`    最后一次重试自动Tracing：${actions.slice(0, 6).join(' → ')}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
   }

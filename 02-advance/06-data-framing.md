@@ -94,7 +94,7 @@ nodeA.transport.on('channel-created', (channel) => {
 
 const data = nodeB.service('data', { timeout: 10000 })
 const value = await data.fetch()
-// 300KB按1024切分 → 369帧；接收端自动组装，data完整还原
+// 300KB按1024切分 + 帧控制信息 > 300帧；接收端自动组装，data完整还原
 ```
 
 **3. 对比不同帧大小**
@@ -102,8 +102,8 @@ const value = await data.fetch()
 同样的300KB payload，不同frameLimit的帧数差异：
 
 ```javascript
-// 默认（100KB/帧）：          收到307200字节，发出6帧
-// frameLimit=1024（1KB/帧）：  收到307200字节，发出369帧
+// 默认（100KB/帧）：          附加帧控制信息后，大于3帧
+// frameLimit=1024（1KB/帧）：  附加帧控制信息后，大于300帧
 ```
 
 无论切分为多少帧，接收者接收的都是**完整组装还原**的数据。

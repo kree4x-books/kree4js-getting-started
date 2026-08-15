@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n from '@kree4js/kree4n'
 
@@ -67,6 +67,8 @@ async function main () {
     const helloResult = await greeter.hello('Kree4JS')
     logger.info(`[node-b] 调用 [node-a].greeter.hello('Kree4JS') = ${helloResult}`)
   } finally {
+    // 停止前留出在途帧的送达窗口
+    await PromiseUtils.delay(100)
     // 依次停止，ExecUtils.quiet吞掉单个stop异常，避免一个失败阻塞另一个退出
     await ExecUtils.quiet(() => callee.stop(), logger)
     logger.info(`${callee}，已停止`)

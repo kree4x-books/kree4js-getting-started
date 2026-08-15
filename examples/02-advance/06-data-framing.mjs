@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create } from '@kree4js/kree4n'
 
@@ -41,6 +41,8 @@ async function run (label, frameLimit) {
   const value = await data.fetch()
   logger.info(`${label}: 收到${value.length}字节，发出${frameCount}帧`)
 
+  // 停止前留出在途帧的送达窗口
+  await PromiseUtils.delay(100)
   await ExecUtils.quiet(() => nodeB.stop(), logger)
   logger.info(`${nodeB}，已停止`)
   await ExecUtils.quiet(() => nodeA.stop(), logger)

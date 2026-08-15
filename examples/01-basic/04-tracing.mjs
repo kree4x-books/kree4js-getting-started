@@ -3,7 +3,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n, { FileWriter } from '@kree4js/kree4n'
 import Trace from '@kree4js/tracing'
@@ -73,6 +73,8 @@ async function main () {
     tracer.output(new Trace.SvgFormatter(), new FileWriter(tmpDir, '.svg'), Trace.OutputLevel.INFO)
     logger.info(`[node-a] 已导出tracing时间线到 ${path.join(tmpDir, `${tracer.id}.svg`)}`)
   } finally {
+    // 停止前留出在途帧的送达窗口
+    await PromiseUtils.delay(100)
     // 依次停止，ExecUtils.quiet吞掉单个stop异常，避免一个失败阻塞另一个退出
     await ExecUtils.quiet(() => callee.stop(), logger)
     logger.info(`${callee}，已停止`)

@@ -97,7 +97,7 @@ const echoResult = await str.echo('Kafka works!')  // "Echo: Kafka works!"
 const greetResult = await str.greet('World')       // "Hello, World! (via Kafka)"
 ```
 
-## 三、须强调的细节
+### 三. 须强调的细节
 
 **1. KafkaAttachConnectionProvider需手动注册**
 
@@ -148,7 +148,7 @@ node.attach('kafka://127.0.0.1:8092', { topicMode: 'dynamic' })
 
 dynamic模式时，各个Kree4X节点的互相发现比较缓慢，节点启动后，如果立即进行服务调用，可能因节点尚未互相发现而找不到目标服务，而出现临时失败。
 
-## 四、涉及到的API:
+### 四. 涉及到的API:
 
 **1. Kafka连接**
 
@@ -168,6 +168,6 @@ dynamic模式时，各个Kree4X节点的互相发现比较缓慢，节点启动�
 node.attach(url: string, options?: { topicMode?: 'broadcast'|'dynamic' }): this
 ```
 
-## 五、可运行代码
+### 五. 可运行代码
 
 完整示例代码，参见：<a href="../examples/01-basic/12-kafka-protocol.mjs" target="_blank">12-kafka-protocol.mjs</a>

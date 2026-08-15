@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create } from '@kree4js/kree4n'
 
@@ -56,6 +56,7 @@ async function main () {
     const hello = nodeC.service('hello', { timeout: 8000 })
     logger.info(`   → ${await hello.hi('World')}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
     logger.info(`${nodeA}，已停止`)
     await ExecUtils.quiet(() => proxy.stop(), logger)

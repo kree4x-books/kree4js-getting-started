@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create, SelectPolicy, Transports } from '@kree4js/kree4n'
 
@@ -139,6 +139,7 @@ async function main () {
     sensor.select(fastestPolicy)
     logger.info(`read: ${Math.round(await sensor.read())}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => caller.stop(), logger)
     logger.info(`${caller}，已停止`)
     await ExecUtils.quiet(() => nodeC.stop(), logger)

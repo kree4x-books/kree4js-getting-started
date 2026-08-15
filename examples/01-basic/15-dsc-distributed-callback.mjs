@@ -71,6 +71,7 @@ async function main () {
     // 稍微等下，等CB结果回传给商家；否则stop关闭连接，会导致CB结果无法回传
     await PromiseUtils.delay(100)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

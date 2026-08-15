@@ -380,6 +380,8 @@ async function main () {
   const result = await nodeB.service('greeter').hello('ipc-direct')
   logger.info(`[ipc] 跨节点调用成功: ${result}`)
 
+  // 停止前留出在途帧的送达窗口
+  await PromiseUtils.delay(100)
   await ExecUtils.quiet(() => nodeB.stop(), logger)
   await ExecUtils.quiet(() => nodeA.stop(), logger)
   logger.info('全部节点已停止')

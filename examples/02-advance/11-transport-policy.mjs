@@ -106,7 +106,7 @@ async function main () {
     logger.info(`[6] PassThroughPolicy（自定义），调用成功：${resultCustom}`)
   } finally {
     // UDP是fire-and-forget数据报：给最后一批在途帧留出送达窗口再停止
-    await PromiseUtils.delay(200)
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
   }

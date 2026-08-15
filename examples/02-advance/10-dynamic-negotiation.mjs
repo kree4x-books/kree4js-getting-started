@@ -88,6 +88,7 @@ async function main () {
     const direct2 = await waitDirect(nodeB2, nodeA.id)
     logger.info(`    重新协商完成，node-b 与 node-a 直连：${direct2}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB2?.stop(), logger)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

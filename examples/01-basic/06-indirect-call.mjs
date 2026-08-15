@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n from '@kree4js/kree4n'
 
@@ -58,6 +58,7 @@ async function main () {
     const result = await greet.hello('World')
     logger.info(`[leafNode2] 调用 [leafNode1].greet.hello('World') = ${result}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => leafNode2.stop(), logger)
     logger.info(`${leafNode2}，已停止`)
     await ExecUtils.quiet(() => leafNode1.stop(), logger)

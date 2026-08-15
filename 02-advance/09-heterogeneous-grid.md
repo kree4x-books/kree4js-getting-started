@@ -85,7 +85,7 @@ const nodeC = create('node-c', 'UDP caller node')
 nodeC.register('greet', {
   hello (name) { return `Hello, ${name}! (from node-c)` }
 })
-// node-b: UDP连接node-b，注意“ack: true”开启了KreeX应用层可靠UDP通信
+// node-c: UDP连接node-b，注意“ack: true”开启了KreeX应用层可靠UDP通信
 nodeC.attach('udp://127.0.0.1:8092', { frameLimit: 1152, ack: true })
 ```
 

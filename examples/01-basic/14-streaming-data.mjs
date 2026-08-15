@@ -7,7 +7,7 @@ import { pipeline } from 'node:stream/promises'
 import { fileURLToPath } from 'node:url'
 
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 
 // owned
@@ -94,6 +94,7 @@ async function main () {
     await saveFileStream(downloadedFile, downloadPath)
     logger.info(`[nodeB] stream.download() => saved to ${downloadPath} (${downloadedFile.size} bytes)`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

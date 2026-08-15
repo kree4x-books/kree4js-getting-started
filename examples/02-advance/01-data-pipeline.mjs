@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 
 // owned
@@ -99,6 +99,7 @@ async function main () {
       logger.warn(`[nodeC] call dropped by nodeA ThingIn pipeline => ${err.message ?? err}`)
     }
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeC.stop(), logger)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

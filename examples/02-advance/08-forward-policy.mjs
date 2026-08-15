@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create, Constants, Transports } from '@kree4js/kree4n'
 
@@ -86,6 +86,7 @@ async function main () {
     logger.info('5. forwardAllowAll() 恢复默认')
     proxy.transport.forwardAllowAll()
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
     logger.info(`${nodeA}，已停止`)
     await ExecUtils.quiet(() => proxy.stop(), logger)

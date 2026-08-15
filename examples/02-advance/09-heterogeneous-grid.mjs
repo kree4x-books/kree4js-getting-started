@@ -71,10 +71,9 @@ async function main () {
     logger.info('=== node-a(TCP) → node-c(UDP)：跨协议调用 ===')
     const greet = nodeA.service('greet', { timeout: 8000 })
     logger.info(`   greet.hello('World') = ${await greet.hello('World')}`)
-
-    // UDP是fire-and-forget数据报：给最后一批在途帧留出送达窗口再停止
-    await PromiseUtils.delay(200)
   } finally {
+    // UDP是fire-and-forget数据报：给最后一批在途帧留出送达窗口再停止
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeC.stop(), logger)
     logger.info(`${nodeC}，已停止`)
     await ExecUtils.quiet(() => nodeB.stop(), logger)

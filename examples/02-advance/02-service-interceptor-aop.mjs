@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create } from '@kree4js/kree4n'
 
@@ -119,6 +119,7 @@ async function main () {
       logger.info('nodeC调用被拒绝: ok=false')
     }
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeC.stop(), logger)
     logger.info(`${nodeC}，已停止`)
     await ExecUtils.quiet(() => nodeB.stop(), logger)

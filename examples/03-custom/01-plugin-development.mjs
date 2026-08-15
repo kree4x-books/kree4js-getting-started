@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4N from '@kree4js/kree4n'
 
@@ -125,6 +125,8 @@ async function main () {
   // 等网格事件传播
   await new Promise(resolve => setTimeout(resolve, 200))
 
+  // 停止前留出在途帧的送达窗口
+  await PromiseUtils.delay(100)
   await ExecUtils.quiet(() => nodeC.stop(), logger)
   await ExecUtils.quiet(() => nodeB.stop(), logger)
   await ExecUtils.quiet(() => nodeA.stop(), logger)

@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import { create, Transports } from '@kree4js/kree4n'
 
@@ -52,6 +52,7 @@ async function main () {
     const value = await sensorOne.read()
     logger.info(`读到: ${value}`) // 被调用的是A或者B，都有可能
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => callerOne.stop(), logger)
     logger.info(`${callerOne}，已停止`)
     await ExecUtils.quiet(() => nodeB.stop(), logger)

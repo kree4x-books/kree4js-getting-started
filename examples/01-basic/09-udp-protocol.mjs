@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n from '@kree4js/kree4n'
 
@@ -60,6 +60,7 @@ async function main () {
     logger.info(`[nodeA] node-b.str.echo('UDP works!') = ${echoResult}`)
     logger.info(`[nodeA] node-b.str.greet('World') = ${greetResult}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

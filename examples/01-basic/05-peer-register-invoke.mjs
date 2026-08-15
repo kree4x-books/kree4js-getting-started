@@ -1,5 +1,5 @@
 // internal
-import { ExecUtils } from '@kree4js/commons-lang'
+import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
 import Kree4n from '@kree4js/kree4n'
 
@@ -49,6 +49,7 @@ async function main () {
     const aInfo = await aIdentifier.whoAreYou()
     logger.info(`[node-b] 调用 [node-a].identifier.whoAreYou() = ${JSON.stringify(aInfo)}`)
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)

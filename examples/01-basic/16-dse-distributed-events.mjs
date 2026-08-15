@@ -56,6 +56,7 @@ async function main () {
 
     logger.info('DSE示例执行完成')
   } finally {
+    await PromiseUtils.delay(100)
     await ExecUtils.quiet(() => nodeB.stop(), logger)
     logger.info(`${nodeB}，已停止`)
     await ExecUtils.quiet(() => nodeA.stop(), logger)
