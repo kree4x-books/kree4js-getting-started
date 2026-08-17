@@ -56,7 +56,7 @@ PayloadCodec的另外一种输出结果，是*frameResult。*
 如果输出的PayloadEncodeResult包含frameResult属性，则代表：
 
 - 之所以叫做“**frameResult**”，`frameResult.buffer`是所有DataFrame首尾相接组成的完整内存区
-- 意味着，分帧已经完成，frames: number[][]指明了每个frame
+- 意味着，分帧已经完成，frames: number[][]指明了每个frame的起始偏移、长度
 
 **5. 为什么需要frameResult？**
 
