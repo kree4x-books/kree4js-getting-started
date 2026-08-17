@@ -1,78 +1,113 @@
-# 扩展载荷编解码：自定义PayloadCodec与TransferProtocol
+# 扩展载荷编解码：自定义PayloadCodec
 
 > Created By [RV](mailto:rodney.vin@gmail.com), and licensed with Creative Commons "[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)"
 
 **目的与场景**
 
-Kree4X的传输栈分为三层：`ConnectionProvider`（连接层，上一章所讲）、`TransferProtocol`（帧格式层）、`PayloadCodec`（载荷编码层）。
+RPC的本质，就是将调用相关的数据，序列化与反序列化后，通过信道传送，调用远程的开放的过程、方法。
 
-在这一章，我们将讲解：
+“调用相关的数据”，就是载荷，“Payload”。
 
-- 如何开发自定义`PayloadCodec`，控制服务调用载荷的字节表示
-- 如何扩展`TransferProtocol`（继承内置二进制协议，更换协议码，注入自定义编解码器）
-- 通过`useProtocol()`注册协议，两端协商后即可互通
+而如何将“调用相关的数据”序列化、反序列化，就是载荷编码器“PayloadCodec”的职责。
+
+Kree4X內建提供了PayloadJsonCodec，与PayloadMsgpackCodec两个编解码器。
+
+在这一章，我们将讲解如何自定义自己的PayloadCodec，并将其注入Kree4X服务节点，替换默认实现。
 
 ### 一. 概念
 
-**1. 传输栈三层模型**
+**1. Payload是什么**
 
-Kree4X把"跨进程字节传输"拆成三层，各司其职：
+Payload，在Kree4X的体系内，实际是特指`TransferableThing.payload`。
 
-- `ConnectionProvider`：**连接层**。TCP、UDP、WebSocket、Kafka……负责建立连接通道，收发原始字节。
-- `TransferProtocol`：**帧格式层**。负责分帧（帧头/帧尾）、流定界、原始字节的能力识别（trait）。
-- `PayloadCodec`：**载荷编码层**。负责结构化数据（对象/数组/字符串……）与载荷字节的双向转换。
+什么是“**TransferableThing**”，参见[可传送物：TransferableThing](https://zhuanlan.zhihu.com/p/2035006431427022978)
 
-**2. TransferProtocol是什么**
+Payload，实际是TransferableThing所携带的业务数据，实际数据类型是`{[key:string]:any}`，一个可以包含任意属性的平数据对象。
 
-`TransferProtocol`，定义了传输协议的抽象接口：
+**2. PayloadCodec是什么**
 
-- `code`（4字符）与`name`：协议标识。注册表按`code`键索引，**两端必须一致**才能协商成功。
-- `encode(thing, payloadCodecOrCode, options)` / `decode(dataPack)`：载荷与数据包的双向转换（委托给`ProtocolCodec`）。
-- 分帧能力：`headerLength()`/`trailerLength()`、`computeFramePduLimit()`/`computeFrameLength()`。
-- 识别能力：`_createTraitIdentifier()`——从原始字节识别本方协议的帧。
+PayloadCodec，负责上述“**平数据对象**”与Uint8Array二进制格式之间的双向转换。
 
-内置的`BinaryProtocol`（协议码`KBTP`）是Kree4X默认实现的完整二进制传输协议。
+- `_encode(payload:{[key:string]:any}, options):PayloadEncodeResult`：对象 → 编码结果，编码结果中封装了编码后的字节Uint8Array。
+- `_decode(pdu:Uint8Array):{[key:string]:any}`：载荷字节 → 对象
 
-**3. PayloadCodec是什么**
+**3. PayloadEncodeResult.*dataPackResult***
 
-`PayloadCodec`，定义了载荷编码器的抽象接口，只需实现4个内部方法：
+PayloadCodec的输出结果之一，是*dataPackResult。*
 
-- `_code()`：4字符编解码器码（如内置`JSON`、`MSGPACK`）
-- `_name()`：可读名称
-- `_encode(payload, options)`：对象 → 帧字节，返回`PayloadEncodeResult`
-- `_decode(pdu)`：载荷字节 → 对象
+如果输出的PayloadEncodeResult包含dataPackResult属性，则代表：
 
-**4. useProtocol()注册协议**
+- 之所以叫“**dataPackResult**”， 是因为`dataPackResult.pdu`可以直接赋值给`DataPack.pdu`
+- 意味着，未分帧，输出的是一个留待后续切分的完整的DataPack.pdu
 
-`KreeX.useProtocol(transferProtocol)`：注册`TransferProtocol`并**设为节点默认协议**（默认`asDefault=true`）。
+**4. PayloadEncodeResult.frameResult**
 
-协议注册进`TransferProtocols`注册表（以`code`为键），节点后续的载荷收发，默认走该协议的默认编解码器。
+PayloadCodec的另外一种输出结果，是*frameResult。*
 
-**5. 默认编解码器必须是"通用自描述格式"**
+```typescript
+{
+  buffer: Uint8Array,   // all frame bytes, include metadata and payload data
+  frames: number[][],   // start byte offset and length for each frame
+  headerLength: number,
+  trailerLength: number,
+}
+```
 
-**这是自定义`PayloadCodec`时最重要的约束。**
+如果输出的PayloadEncodeResult包含frameResult属性，则代表：
 
-服务调用的载荷，只是KreeX流量的一部分；网格服务发现（WhoHasSignal）、Beacon、Tracing等**内部信号同样经过默认编解码器**传输出网。
+- 之所以叫做“**frameResult**”，`frameResult.buffer`是所有DataFrame首尾相接组成的完整内存区
+- 意味着，分帧已经完成，frames: number[][]指明了每个frame
 
-因此，把自定义编解码器设为默认时，它必须能编码**任意JSON结构**（对象/数组/字符串/数字/布尔/null的任意嵌套）。否则内部信号会在对端解码失败——例如：
+**5. 为什么需要frameResult？**
 
-- 自定义编解码器只能处理数字数组
-- 对端收到WhoHasSignal（载荷是`{ service: 'calc' }`对象）时，`service`字段丢失
-- 接收端实例化信号时抛出`Missing "service"`
+零拷贝，Zero-Copy，性能，这是唯一的设计目标。
 
-内置`JSON`/`MSGPACK`编解码器都是通用格式的原因，正在于此。
+在PayloadCodec编码时，分配一个连续的内存区，在编组的过程中，直接将切分完毕的各个Frame.pdu放置到连续内存区的指定位置。
+
+这样，可以避免小容量、多次、频繁的内存分配和回收。
+
+> 內建的PayloadJsonCodec，输出frameResult。
+>
+> 实际机制，很简单。
+>
+> JSON.stringify()将payload转换为string后，定量获取指定字节数的字符，使用TextEncoder可以写入连续内存区的指定位置：
+>
+> **TextEncoder.encodeInto**(*source*: string, *destination*: Uint8Array<ArrayBufferLike>)
+>
+> 这可以避免TextEncoder.encode()分配内存，然后再copy到目标内存区的开销。
+
+**6. usePayloadCodec()：注入Kree4X实例**
+
+Kree4X提供了下述API，用于注入自定义的PayloadCodec：
+
+- `Ports.usePayloadCodec(payloadCodec, asDefault)`：全局注入一个载荷编解码器，`asDefault=true`时将该编解码器设为**默认编解码器**。
+- `kree4x.ports.transport.defaultProtocol.usePayloadCodec(payloadCodec, asDefault)`：向指定Kree4X节点注入一个载荷编解码器，`asDefault=true`时将该编解码器设为**默认编解码器**。
+- Kree4X初始化时，已注入`PayloadJsonCodec`（默认）与`PayloadMsgpackCodec`两种编码器。
+- 将自定义编解码器注入**并设为默认**，即可替换默认实现。
 
 ### 二. 示例代码
 
 在下边的示例中，我们将：
 
-1. 实现一个自定义`PayloadCodec`：`MiniJsonCodec`（码`MJSN`），用"类型标记+递归"的迷你自描述格式（类似简化版MessagePack），实现任意JSON结构的紧凑二进制序列化
-2. 实现一个自定义`TransferProtocol`：`MiniJsonProtocol`（码`MJSP`），**继承内置BinaryProtocol**，复用其全部分帧/识别/组装实现，只更换协议码，并把`MiniJsonCodec`注入为默认编解码器
-3. 两端`useProtocol()`注册同一套协议，服务调用与网格信号的载荷均用`MJSN`双向编解码
+1. **注入**：把自定义`PayloadCodec`：`MiniJsonCodec`注入节点默认协议，`asDefault=true`设为默认编解码器，替换内置`PayloadJsonCodec`
+2. 实现一个自定义`PayloadCodec`：`MiniJsonCodec`，用"类型标记+递归"的迷你自描述格式，简化版MessagePack，实现任意JSON结构的紧凑二进制序列化
+3. **编解码验证**：进行编解码测试，验证任意JSON结构，经`MiniJsonCodec`编码/解码可完整还原
+4. **端到端服务调用**：callee/caller 两端注入`MiniJsonCodec`并设为默认，发起真实RPC，验证参数对象与返回值对象均经`MJSN`双向编解码
 
 > 注意：此示例无任何生产级意义，未经完善的覆盖测试、未经平台兼容性测试
 
-**1. 自定义PayloadCodec：MiniJsonCodec**
+**1. 注入PayloadCodec：usePayloadCodec()**
+
+节点级注入：创建节点后，向默认协议注入自定义编解码器，并设为默认：
+
+```javascript
+// 节点级注入：向默认协议注入自定义编解码器并设为默认
+const node = Kree4N.create('node-codec-demo')
+const defaultProtocol = node.ports.transport.defaultProtocol
+defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
+```
+
+**2. 自定义PayloadCodec：MiniJsonCodec**
 
 类型标记编码表：
 
@@ -87,264 +122,118 @@ Kree4X把"跨进程字节传输"拆成三层，各司其职：
 
 ```javascript
 // 自定义载荷编解码器：继承框架基类，实现4个内部方法
+// （示意：省略递归序列化/反序列化的具体实现，完整代码见03-payload-codec.mjs）
 class MiniJsonCodec extends PayloadCodec {
   // 可读名称
   _name () {
     return 'Mini JSON Codec'
   }
 
-  // 4字符编解码器码（与内置'JSON'/'MSGPACK'同族）
+  // Kree4X节点内唯一，4字符代码，不超过4字节
   _code () {
     return 'MJSN'
   }
 
-  // 对象 → 帧字节：编码 + 按帧PDU上限校检 + 预留帧头/帧尾空间
+  // 对象 → 编码结果：
+  // - 单帧场景：返回frameResult（完整帧字节buffer + 帧边界frames + 帧头/帧尾长度）
+  // - 超限且不可切分：返回dataPackResult（纯载荷PDU，由框架整包发送）
   _encode (payload, options) {
-    const {
-      frameLimit = Infinity,
-      framePduLimit = Infinity,
-      headerLength = 0,
-      trailerLength = 0
-    } = options
-    // encodeAny()递归序列化整个载荷
-    const body = encodeAny(payload)
-    if (body.length > framePduLimit) {
-      throw new Error(`MiniJsonCodec: payload too large (multi-frame not implemented)`)
-    }
-    // 帧字节 = 帧头预留 + 载荷 + 帧尾预留
-    const frameLength = headerLength + body.length + trailerLength
-    const buffer = new Uint8Array(frameLength)
-    buffer.set(body, headerLength)
-    return {
-      frameResult: {
-        buffer,
-        frames: [[0, frameLength]], // [起始偏移, 帧长度]列表
-        headerLength,
-        trailerLength
-      },
-      frameLimit,
-      framePduLimit
-    }
+    // encodeAny(payload)：按上方类型标记表递归序列化
+    // body.length <= framePduLimit → frameResult
+    // body.length >  framePduLimit → dataPackResult { pdu: body }
   }
 
-  // 载荷字节 → 对象：按类型标记递归还原
+  // 载荷字节 → 对象：按类型标记递归还原（与encodeAny一一对应）
   _decode (pdu) {
-    const state = { offset: 0 }
-    const value = decodeAny(pdu, state)
-    if (state.offset !== pdu.length) {
-      throw new Error(`MiniJsonCodec: trailing bytes after decode`)
-    }
-    return value
+    // decodeAny(pdu)：类型标记表逆序还原
   }
 }
 ```
 
-递归编码与解码（类定义之后的独立函数）：
+> 注：递归序列化与反序列化的完整实现（`encodeAny`/`decodeAny`/`concatBytes`，类定义之后的独立函数），以及所有验证代码，见下方「可运行代码」链接。
+
+**3. 闭环测试验证**
+
+不引入任何Kree4X节点，对编解码器做手动闭环验证。
+
+任意结构 → 字节 → 还原，并特别覆盖`undefined`字段的丢弃语义：
 
 ```javascript
-// 编码任意值（递归）：null/bool/number/string/array/object
-function encodeAny (value) {
-  if (value == null) return Uint8Array.of(0x00)
-  if (typeof value === 'boolean') return Uint8Array.of(0x02, value ? 1 : 0)
-  if (typeof value === 'number') {
-    const bytes = new Uint8Array(9)
-    bytes[0] = 0x03
-    new DataView(bytes.buffer).setFloat64(1, value)
-    return bytes
-  }
-  if (typeof value === 'string') {
-    const raw = new TextEncoder().encode(value)
-    const bytes = new Uint8Array(5 + raw.length)
-    bytes[0] = 0x04
-    new DataView(bytes.buffer).setUint32(1, raw.length)
-    bytes.set(raw, 5)
-    return bytes
-  }
-  if (Array.isArray(value)) {
-    const chunks = [Uint8Array.of(0x05)]
-    for (const item of value) chunks.push(encodeAny(item))
-    chunks.push(Uint8Array.of(0xFF)) // 数组结束标记
-    return concatBytes(chunks)
-  }
-  if (typeof value === 'object') {
-    const chunks = [Uint8Array.of(0x06)]
-    for (const [key, val] of Object.entries(value)) {
-      if (val === undefined) continue // 与JSON.stringify语义对齐：丢弃undefined字段
-      chunks.push(encodeAny(key), encodeAny(val))
-    }
-    chunks.push(Uint8Array.of(0xFF)) // 对象结束标记
-    return concatBytes(chunks)
-  }
-  throw new TypeError(`MiniJsonCodec: unsupported value type: ${typeof value}`)
-}
-
-// 解码任意值（递归）：与encodeAny一一对应
-function decodeAny (bytes, state) {
-  const tag = bytes[state.offset++]
-  switch (tag) {
-    case 0x00: return null
-    case 0x02: return bytes[state.offset++] === 1
-    case 0x03: {
-      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-      const number = view.getFloat64(state.offset)
-      state.offset += 8
-      return number
-    }
-    case 0x04: {
-      const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength)
-      const length = view.getUint32(state.offset)
-      state.offset += 4
-      const raw = bytes.subarray(state.offset, state.offset + length)
-      state.offset += length
-      return new TextDecoder().decode(raw)
-    }
-    case 0x05: {
-      const array = []
-      while (bytes[state.offset] !== 0xFF) array.push(decodeAny(bytes, state))
-      state.offset++ // 跳过结束标记
-      return array
-    }
-    case 0x06: {
-      const object = {}
-      while (bytes[state.offset] !== 0xFF) {
-        const key = decodeAny(bytes, state)
-        object[key] = decodeAny(bytes, state)
-      }
-      state.offset++
-      return object
-    }
-    default:
-      throw new Error(`MiniJsonCodec: unknown tag: ${tag}`)
-  }
-}
-
-// 拼接多个字节数组
-function concatBytes (chunks) {
-  let total = 0
-  for (const chunk of chunks) total += chunk.length
-  const merged = new Uint8Array(total)
-  let offset = 0
-  for (const chunk of chunks) {
-    merged.set(chunk, offset)
-    offset += chunk.length
-  }
-  return merged
+const codec = new MiniJsonCodec()
+const samples = [
+  { name: 'calc', enabled: true, ratio: 0.625, tags: ['a', 1, null], nested: { x: [1.5, 2.5] } },
+  { a: 1, dropped: undefined, c: null }, // undefined字段在编码时被丢弃（与JSON.stringify对齐）
+  'hello',
+  42,
+  true,
+  null,
+  [1, 'two', false, null]
+]
+for (const sample of samples) {
+  const result = codec.encode(sample, {
+    frameLimit: Infinity, framePduLimit: Infinity, headerLength: 0, trailerLength: 0
+  })
+  const decoded = codec.decode(result.frameResult.buffer)
+  // decoded.deepEqual(sample)
 }
 ```
 
-**2. 自定义TransferProtocol：MiniJsonProtocol**
+**4. 端到端服务调用验证**
 
-继承内置`BinaryProtocol`，复用其**全部分帧/识别/组装实现**，只更换协议码，并在初始化时注入自定义编解码器：
+callee/caller两端都注入`MiniJsonCodec`，并设为默认，两端一致，数据才能互相解码。
 
-```javascript
-// 自定义传输协议：继承标准二进制协议，换协议码 + 注入自定义默认编解码器
-class MiniJsonProtocol extends BinaryProtocol {
-  // 协议码：注册表以code为键，两端必须一致才能协商成功
-  _code () {
-    return 'MJSP'
-  }
-
-  // 可读名称
-  _name () {
-    return 'Mini JSON Binary Transfer Protocol'
-  }
-
-  // 覆写协议初始化：保留父级JSON(默认)/MSGPACK，再注册MJSN并设为默认
-  _init () {
-    super._init()
-    this.usePayloadCodec(new MiniJsonCodec(), true)
-  }
-}
-```
-
-> 注：`@kree4js/kree4n`顶层导出的`BinaryProtocol`是**模块对象**（内含`BinaryProtocol`类、`BinaryConstants`常量与JSON/MSGPACK编解码器），继承时须取其中的类：`const { BinaryProtocol } = BinaryProtocolModule`。
-
-**3. 注册并使用**
+发起真实RPC调用，参数对象与返回值对象均经`MJSN`双向编解码：
 
 ```javascript
-// node-a：服务端节点，注册自定义协议并设为默认（useProtocol默认asDefault=true）
+// callee：注入MJSN -> 注册服务 -> 监听
 const callee = Kree4N.create('node-a', '服务端节点')
-callee.useProtocol(new MiniJsonProtocol())
+callee.ports.transport.defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
 callee.register('calc', {
-  sum (numbers) {
-    return numbers.reduce((acc, n) => acc + n, 0)
+  sum (params) {
+    const { values, scale = 1 } = params ?? {}
+    const total = values.reduce((acc, n) => acc + n, 0)
+    return { label: params?.label ?? 'sum', total: total * scale, count: values.length }
   }
 })
 callee.listen('tcp://127.0.0.1:8330')
 await callee.start()
 
-// node-b：客户端节点，注册同一套自定义协议，连接并调用
+// caller：注入MJSN -> 连接
 const caller = Kree4N.create('node-b', '客户端节点')
-caller.useProtocol(new MiniJsonProtocol())
+caller.ports.transport.defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
 caller.attach('tcp://127.0.0.1:8330')
 await caller.start()
 
 // 等待网格传播：让两侧发现彼此的服务
 await new Promise(resolve => setTimeout(resolve, 300))
 
-// 调用：参数数组经自定义'MJSN'编解码器传到远端
+// 调用：参数对象与返回值对象均经MJSN双向编解码
 const calc = caller.service('calc')
-const result = await calc.sum([10.5, 20.25, 30.125])
-// 60.875
-```
-
-**4. 结构闭环验证**
-
-未启动任何节点的前提下，可先对编解码器做手动闭环验证（任意结构 → 字节 → 还原）：
-
-```javascript
-const codec = new MiniJsonCodec()
-const sample = { name: 'calc', enabled: true, ratio: 0.625, tags: ['a', 1, null], nested: { x: [1.5, 2.5] } }
-const result = codec.encode(sample, {
-  frameLimit: Infinity, framePduLimit: Infinity, headerLength: 0, trailerLength: 0
-})
-const decoded = codec.decode(result.frameResult.buffer)
-// decoded.deepEqual(sample)
+const result = await calc.sum({ label: 'MJSN链路', values: [10.5, 20.25, 30.125], scale: 2 })
+// result = { label: 'MJSN链路', total: 121.75, count: 3 }
 ```
 
 ### 三. 须强调的细节
 
-**1. 默认编解码器必须通用**
+**1. 不可对Payload的结构做任何假定**
 
-- 服务调用的载荷，只是框架流量的一部分；**网格信号同样走默认编解码器**（TCP连接非单帧模式，直接使用默认协议+默认编解码器）。
-- 若自定义编解码器被设为默认，则必须能编码任意JSON结构；否则网格发现信号会在对端解码失败（典型症状：`Missing "service"`）。
-- 只做特定类型的编解码器（如"只处理数字数组"），应以**非默认**编解码器注册，并通过协议层`encode(thing, codecCode)`显式使用。
+PayloadCodec，必须能处理任意结构平数据对象。
 
-**2. 协议码与编解码器码的协作**
+不能处理给定的Payload时，抛出异常。
 
-- `TransferProtocol.code`与`PayloadCodec.code`组成`codecPairs`（如`['MJSP', 'MJSN']`），参与网格Beacon广播与协商。
-- **两端必须注册同一套协议**（相同协议码、相同编解码器码），协商才能成功。
-- 注册表以`code`为键：`useProtocol()`多次注册不同协议码会共存；同一协议码重复注册会覆盖。
+**2. Caller、Callee两端都要注入**
 
-**3. `useProtocol()`会改变默认协议**
+仅在一端注入自定义Codec，数据在另一端将无法识别，无法解码。
 
-- `KreeX.useProtocol(protocol)`默认`asDefault=true`：注册的同时把该协议设为节点默认协议。
-- 默认协议决定无协商记录时的首发编码；把默认协议换掉后，后续载荷收发均走新协议。
-- 想"只注册不换默认"，可在`ports`层使用`asDefault=false`（本示例未涉及）。
+如将自定义Codec设置为默认，应多个Kree4X节点同时设为默认，避免不必要的协议协商。
 
-**4. `_encode()`返回的`PayloadEncodeResult`结构**
+**3. 关于JSON.stringify()与JSON.parse()**
 
-```typescript
-{
-  frameResult: {          // 帧结果（有分帧能力时为可选字段）
-    buffer: Uint8Array,   // 含全部帧字节的缓冲区（帧头预留+载荷+帧尾预留）
-    frames: number[][],   // 每帧的[起始偏移, 帧长度]列表
-    headerLength: number,
-    trailerLength: number
-  },
-  dataPackResult?: { pdu: Uint8Array }, // 不分帧时可选
-  frameLimit: number,
-  framePduLimit: number
-}
-```
+没事干，没有特殊需求，不要去碰瓷V8引擎的`JSON.stringify()`与`JSON.parse()`。
 
-- 单帧场景下，`buffer`从`headerLength`偏移处开始存放载荷字节，帧头/帧尾空间由框架填充。
-- 载荷超过`framePduLimit`时必须自行分帧（示例未实现分帧，超限直接抛错）。
+一般来讲，你，我，包括AI，做的绝大部分优化，都是负优化。
 
-**5. `undefined`与`null`的处理**
-
-- `undefined`编码为`null`标记（`0x00`），与`JSON.stringify`丢弃undefined字段的语义对齐。
-- 对象编码时跳过`undefined`字段值；`null`照常编码并可还原为`null`。
+这是，在RPS性能、内存调优过程中，得到的惨痛教训。
 
 ### 四. 涉及到的API:
 
@@ -356,7 +245,7 @@ const decoded = codec.decode(result.frameResult.buffer)
  */
 class PayloadCodec {
   /**
-   * 编解码器码：4字符，注册表与协商使用的标识。
+   * 编解码器码：4字符代码（不超过4字节），注册表与协商使用的标识。
    * @returns {string}
    * @abstract
    */
@@ -370,95 +259,58 @@ class PayloadCodec {
   _name(): string
 
   /**
-   * 对象 → 帧字节。
-   * @param {object} payload - 待编码的对象。
-   * @param {{ frameLimit: number, framePduLimit: number, headerLength: number, trailerLength: number }} options
-   * @returns {{ frameResult?: { buffer: Uint8Array, frames: number[][], headerLength: number, trailerLength: number }, dataPackResult?: { pdu: Uint8Array }, frameLimit: number, framePduLimit: number }}
+   * 对象 → 载荷字节，并给出帧边界（frameResult）或整包PDU（dataPackResult）。
+   *
+   * @param {{[key:string]:any}} payload - 待编码的对象。
+   * @param {{
+   *   frameLimit: number,      // 帧大小上限。
+   *   framePduLimit: number,   // 单帧载荷（PDU）上限。
+   *   headerLength: number,    // 帧头预留字节数。
+   *   trailerLength: number    // 帧尾预留字节数。
+   * }} options - 编码选项。
+   * @returns {{
+   *   frameResult?: { // 如已分帧，返回。
+   *     buffer: Uint8Array, // 所有帧首尾相接存放的内存区
+   *     frames: number[][], // 各帧的起始位置，和总长度
+   *     headerLength: number, // 每帧的帧头长度
+   *     trailerLength: number // 每帧的尾区长度
+   *   },
+   *   dataPackResult?: { // 无法切分时返回，pdu为dataPack.pdu，纯序列化载荷（不含任何元数据）
+   *     pdu: Uint8Array
+   *   },
+   *   frameLimit: number, // 每帧的最大长度
+   *   framePduLimit: number // 每帧pdu的最大长度
+   * }} 编码结果。
    * @abstract
    */
-  _encode(payload: object, options: object): object
+  _encode(payload, options): PayloadEncodeResult
 
   /**
    * 载荷字节 → 对象。
    * @param {Uint8Array} pdu - 载荷字节。
-   * @returns {object|undefined}
+   * @returns {{[key:string]:any}|undefined}
    * @abstract
    */
-  _decode(pdu: Uint8Array): object|undefined
+  _decode(pdu): {[key:string]:any}|undefined
 }
 ```
 
-**2. TransferProtocol 基类（扩展时需实现/覆写的抽象成员）**
+**2. 注入自定义PayloadCodec的API**
 
 ```typescript
 /**
- * 传输协议：帧格式层。注册表以 code 为键索引。
- */
-class TransferProtocol {
-  /**
-   * 协议码：最多4字符，识别传输协议的标识。
-   * @returns {string}
-   * @abstract
-   */
-  _code(): string
-
-  /**
-   * 协议可读名称。
-   * @returns {string}
-   * @abstract
-   */
-  _name(): string
-
-  /**
-   * 协议初始化钩子：构造时调用，用于注册载荷编解码器。
-   * 默认空实现，子类可覆写。
-   */
-  _init(): void
-
-  /**
-   * 注册一个载荷编解码器。
-   * @param {PayloadCodec} payloadCodec - 载荷编解码器实例。
-   * @param {boolean} [asDefault=false] - 是否设为该协议的默认编解码器。
-   * @returns {boolean} 注册成功返回true；已存在返回false。
-   */
-  usePayloadCodec(payloadCodec: PayloadCodec, asDefault?: boolean): boolean
-
-  /**
-   * 帧头长度（字节）。
-   * @param {boolean} isEnd2End
-   * @param {number} maxHops
-   * @returns {number}
-   * @abstract
-   */
-  headerLength(isEnd2End: boolean, maxHops: number): number
-
-  /**
-   * computeFramePduLimit / computeFrameLength / createDirectDataOperator /
-   * _createDataPackAssembler / _createDelimiter / _createTraitIdentifier /
-   * _createDataFrameCodec 等分帧识别能力，均为抽象方法。
-   * 本示例通过继承BinaryProtocol复用其实现，无须覆写。
-   */
-}
-```
-
-**3. 节点注册协议**
-
-```typescript
-/**
- * 注册一个传输协议，并设为节点默认协议（默认asDefault=true）。
+ * 注册一个载荷编解码器。
  *
- * @param {TransferProtocol} transferProtocol - 传输协议实例。
- * @returns {KreeX} 当前节点实例，支持链式调用。
+ * @param {PayloadCodec} payloadCodec - 载荷编解码器实例。
+ * @param {boolean} [asDefault=false] - 设为默认编解码器。默认false（仅注册）。
  */
-useProtocol(transferProtocol)
 
-/**
- * 注销一个传输协议。
- *
- * @param {TransferProtocol} transferProtocol - 传输协议实例。
- * @returns {KreeX} 当前节点实例，支持链式调用。
- */
-discardProtocol(transferProtocol)
+// 全局注入（Ports）：返回当前实例，支持链式调用。
+Ports.usePayloadCodec(payloadCodec: PayloadCodec, asDefault?: boolean): this
+
+// 节点级注入（kree4x.ports.transport.defaultProtocol，即默认协议实例）：
+// 返回boolean：新增注册返回true；已存在（仅切换默认标记）或协议未初始化返回false。
+kree4x.ports.transport.defaultProtocol.usePayloadCodec(payloadCodec: PayloadCodec, asDefault?: boolean): boolean
 ```
 
 ### 五. 可运行代码

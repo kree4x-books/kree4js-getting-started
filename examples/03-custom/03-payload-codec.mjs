@@ -1,14 +1,13 @@
 // internal
 import { ExecUtils, PromiseUtils } from '@kree4js/commons-lang'
 import Logging from '@kree4js/commons-logging'
-import Kree4N, { BinaryProtocol as BinaryProtocolModule, Transports } from '@kree4js/kree4n'
+import Kree4N, { Transports } from '@kree4js/kree4n'
 
 // module vars
 Logging.setLevel('DEBUG')
 const logger = Logging.getLogger('payload-codec')
 
 const { PayloadCodec } = Transports
-const { BinaryProtocol } = BinaryProtocolModule
 
 /**
  * @typedef {import('@kree4js/kree4js/types/transports/payload-codec').PayloadEncodeOptions} PayloadEncodeOptions
@@ -41,6 +40,8 @@ class MiniJsonCodec extends PayloadCodec {
   /**
    * Return the 4-chars code of Codec.
    *
+   * At most 4 bytes; unique within a Kree4X node.
+   *
    * @returns {string} The codec code.
    */
   _code () {
@@ -57,18 +58,32 @@ class MiniJsonCodec extends PayloadCodec {
   _encode (payload, options) {
     const { frameLimit = Infinity, framePduLimit = Infinity, headerLength = 0, trailerLength = 0 } = options
     const body = encodeAny(payload)
-    if (body.length > framePduLimit) {
-      throw new Error(`MiniJsonCodec: payload ${body.length}B exceeds framePduLimit ${framePduLimit}B (multi-frame not implemented)`)
+    // Single frame case: payload fits in one frame.
+    // buffer is the complete frame bytes: [frame header area][payload][frame trailer area],
+    // protocol metadata is written into the header/trailer areas by the framework later.
+    // Zero-copy: the framework slices this shared buffer by frames (subarray views, no copy)
+    // and transfers the ArrayBuffer directly (e.g. worker transferList).
+    if (body.length <= framePduLimit) {
+      const frameLength = headerLength + body.length + trailerLength
+      const buffer = new Uint8Array(frameLength)
+      buffer.set(body, headerLength)
+      return {
+        frameResult: {
+          buffer,
+          frames: [[0, frameLength]],
+          headerLength,
+          trailerLength
+        },
+        frameLimit,
+        framePduLimit
+      }
     }
-    const frameLength = headerLength + body.length + trailerLength
-    const buffer = new Uint8Array(frameLength)
-    buffer.set(body, headerLength)
+    // Multi-frame case: MiniJson byte stream cannot be split (self-contained tag stream,
+    // any cut breaks decoding). Return the pure serialized payload as dataPackResult,
+    // the framework sends it as one whole data pack (same as built-in MSGPACK codec).
     return {
-      frameResult: {
-        buffer,
-        frames: [[0, frameLength]],
-        headerLength,
-        trailerLength
+      dataPackResult: {
+        pdu: body
       },
       frameLimit,
       framePduLimit
@@ -88,41 +103,6 @@ class MiniJsonCodec extends PayloadCodec {
       throw new Error(`MiniJsonCodec: $${state.offset} consumed, but pdu length is $${pdu.length}`)
     }
     return value
-  }
-}
-
-/**
- * 自定义传输协议：继承标准二进制协议（复用其分帧/识别/组装实现），
- * 更换协议码，并在初始化时注入自定义编解码器并设为默认。
- *
- * 注：Kree4N 顶层直接导出 BinaryProtocol 模块对象（含 BinaryProtocol 类、常量与
- * JSON/MSGPACK 编解码器），这里取其中的 BinaryProtocol 类继承。
- */
-class MiniJsonProtocol extends BinaryProtocol {
-  /**
-   * 返回协议码：注册表以 code 为键，两端必须一致才能协商成功。
-   *
-   * @returns {string} 协议码。
-   */
-  _code () {
-    return 'MJSP'
-  }
-
-  /**
-   * 返回协议可读名称。
-   *
-   * @returns {string} 协议名称。
-   */
-  _name () {
-    return 'Mini JSON Binary Transfer Protocol'
-  }
-
-  /**
-   * 覆写协议初始化：保留父级JSON(默认)/MSGPACK编解码器，注册自定义编解码器并设为默认。
-   */
-  _init () {
-    super._init()
-    this.usePayloadCodec(new MiniJsonCodec(), true)
   }
 }
 
@@ -236,48 +216,90 @@ function concatBytes (chunks) {
 
 /**
  * 演示内容：
- * - 自定义载荷编解码器（PayloadCodec）：MiniJsonCodec（MJSN），类型标记+递归的字节流格式
- * - 自定义传输协议（TransferProtocol）：继承BinaryProtocol换协议码（MJSP），把MJSN设为默认编解码器
- * - useProtocol() 注册协议；两端协商一致后，服务调用与网格信号的载荷均用'MJSN'双向编解码
+ * - 注入：把自定义载荷编解码器MiniJsonCodec（MJSN）注入节点默认协议并设为默认，
+ *   替换内置PayloadJsonCodec（JSON）成为默认编解码器。
+ * - 自定义载荷编解码器（PayloadCodec）：MiniJsonCodec（MJSN），类型标记+递归的字节流格式。
+ * - 闭环验证（不启动任何节点）：
+ *   1. 任意JSON结构（对象/数组/字符串/数字/布尔/null，含undefined字段丢弃语义）经 encode -> decode 完整还原。
+ *   2. 超帧PDU上限且不可切分时，返回 dataPackResult（纯载荷PDU），decode(pdu) 同样完整还原。
+ * - 端到端服务调用：callee/caller 两端都注入MJSN并设为默认，发起真实RPC，
+ *   参数对象与返回值对象均经MJSN双向编解码。
  *
- * @returns {Promise<void>} 调用完成时 resolve。
+ * @returns {Promise<void>} 验证完成时 resolve。
  */
 async function main () {
-  // 手动闭环验证：任意结构 <-> 字节流
-  const sample = { name: 'calc', enabled: true, ratio: 0.625, tags: ['a', 1, null], nested: { x: [1.5, 2.5] } }
-  const codec = new MiniJsonCodec()
-  if (JSON.stringify(codec.decode(codec.encode(sample, { frameLimit: Infinity, framePduLimit: Infinity, headerLength: 0, trailerLength: 0 }).frameResult.buffer.subarray(0))) !== JSON.stringify(sample)) {
-    throw new Error('MiniJsonCodec round-trip failed')
-  }
-  logger.info('[validate] MiniJsonCodec 结构闭环验证通过')
+  // ── 1. 注入：向默认协议注入MiniJsonCodec并设为默认 ──────────
+  const node = Kree4N.create('node-codec-demo')
+  const defaultProtocol = node.ports.transport.defaultProtocol
+  const before = defaultProtocol.defaultPayloadCodec.code
+  defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
+  const after = defaultProtocol.defaultPayloadCodec.code
+  logger.info(`[inject] 默认编解码器替换：${before} -> ${after}（注入MiniJsonCodec并设为默认）`)
+  await node.stop()
 
-  // ── callee：注册自定义协议，然后监听 ────────────────
+  // ── 2. 闭环验证：任意结构 <-> 字节流（含undefined字段丢弃语义） ──
+  const codec = new MiniJsonCodec()
+  const samples = [
+    { name: 'calc', enabled: true, ratio: 0.625, tags: ['a', 1, null], nested: { x: [1.5, 2.5] } },
+    { a: 1, dropped: undefined, c: null },
+    'hello',
+    42,
+    true,
+    null,
+    [1, 'two', false, null]
+  ]
+  for (const sample of samples) {
+    const result = codec.encode(sample, { frameLimit: Infinity, framePduLimit: Infinity, headerLength: 0, trailerLength: 0 })
+    const decoded = codec.decode(result.frameResult.buffer)
+    if (JSON.stringify(decoded) !== JSON.stringify(sample)) {
+      throw new Error(`MiniJsonCodec round-trip failed for ${JSON.stringify(sample)}`)
+    }
+  }
+  logger.info('[validate] MiniJsonCodec 常规闭环验证通过（含undefined字段丢弃语义）')
+
+  // 超限且不可切分：必须返回 dataPackResult（纯载荷PDU），而非抛错或截断
+  const big = { list: Array.from({ length: 200 }, (_, i) => i) }
+  const bigResult = codec.encode(big, { frameLimit: Infinity, framePduLimit: 64, headerLength: 0, trailerLength: 0 })
+  if (bigResult.dataPackResult == null) {
+    throw new Error('MiniJsonCodec: oversize payload should return dataPackResult')
+  }
+  const bigDecoded = codec.decode(bigResult.dataPackResult.pdu)
+  if (JSON.stringify(bigDecoded) !== JSON.stringify(big)) {
+    throw new Error('MiniJsonCodec oversize round-trip failed')
+  }
+  logger.info('[validate] MiniJsonCodec 超限不可切分场景验证通过（dataPackResult 整包PDU直发）')
+
+  // ── 3. 端到端服务调用：callee/caller两端注入MJSN并设为默认，发起真实RPC ──
   const callee = Kree4N.create('node-a', '服务端节点')
-  // useProtocol()：注册协议并设为默认（KreeX.useProtocol默认asDefault=true）
-  callee.useProtocol(new MiniJsonProtocol())
+  callee.ports.transport.defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
   callee.register('calc', {
-    sum (numbers) {
-      return numbers.reduce((acc, n) => acc + n, 0)
+    sum (params) {
+      const { values, scale = 1 } = params ?? {}
+      const total = values.reduce((acc, n) => acc + n, 0)
+      return { label: params?.label ?? 'sum', total: total * scale, count: values.length }
     }
   })
   callee.listen('tcp://127.0.0.1:8330')
   await callee.start()
-  logger.info('[node-a] 已启动，监听tcp://127.0.0.1:8330，默认协议：MJSP + MJSN')
+  logger.info('[node-a] 已启动，监听tcp://127.0.0.1:8330，默认编解码器：MJSN')
 
-  // ── caller：注册同一套自定义协议，连接并调用 ──────────
   const caller = Kree4N.create('node-b', '客户端节点')
-  caller.useProtocol(new MiniJsonProtocol())
+  caller.ports.transport.defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true)
   caller.attach('tcp://127.0.0.1:8330')
   await caller.start()
-  logger.info('[node-b] 已启动，已连接到 [node-a]')
+  logger.info('[node-b] 已启动，已连接到 [node-a]，默认编解码器：MJSN')
 
   // 等待网格传播：让两侧发现彼此的服务
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  // 调用：参数数组经自定义'MJSN'编解码器传到远端
+  // 参数对象与返回值对象均经MJSN双向编解码
+  const params = { label: 'MJSN链路', values: [10.5, 20.25, 30.125], scale: 2 }
   const calc = caller.service('calc')
-  const result = await calc.sum([10.5, 20.25, 30.125])
-  logger.info(`[node-b] calc.sum([10.5, 20.25, 30.125]) = ${result}（期望 60.875）`)
+  const result = await calc.sum(params)
+  if (result.total !== 121.75 || result.count !== 3 || result.label !== 'MJSN链路') {
+    throw new Error(`e2e call failed: ${JSON.stringify(result)}`)
+  }
+  logger.info(`[node-b] calc.sum(${JSON.stringify(params)}) = ${JSON.stringify(result)}（期望total=121.75，经MJSN双向编解码）`)
 
   // 停止前留出在途帧的送达窗口
   await PromiseUtils.delay(100)
