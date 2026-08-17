@@ -170,4 +170,4 @@ node.attach(url: string, options?: { topicMode?: 'broadcast'|'dynamic' }): this
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/01-basic/12-kafka-protocol.mjs" target="_blank">12-kafka-protocol.mjs</a>
+完整示例代码，参见：<a href="../examples/01-basic/13-kafka-protocol.mjs" target="_blank">13-kafka-protocol.mjs</a>

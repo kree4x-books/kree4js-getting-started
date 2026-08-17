@@ -306,4 +306,4 @@ get streamReceiverFactory(): StreamReceiverFactory|undefined
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/03-custom/04-stream-receiver.mjs" target="_blank">04-stream-receiver.mjs</a>
+完整示例代码，参见：<a href="../examples/03-custom/05-stream-receiver.mjs" target="_blank">05-stream-receiver.mjs</a>

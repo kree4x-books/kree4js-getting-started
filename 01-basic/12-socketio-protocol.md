@@ -138,4 +138,4 @@ node.attach(url: string): this
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/01-basic/11-socketio-protocol.mjs" target="_blank">11-socketio-protocol.mjs</a>
+完整示例代码，参见：<a href="../examples/01-basic/12-socketio-protocol.mjs" target="_blank">12-socketio-protocol.mjs</a>

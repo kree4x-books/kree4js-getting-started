@@ -6,9 +6,9 @@
 
 Kree4X使用https/tls协议时，通过listen(url, options)/attach(url, options)的options参数可以传入证书信息。
 
-这是一种硬编码，会带来运维阶段动态维护的困难。
+这是一种硬编码，这会带来运维阶段，动态维护的困难。
 
-此外，还存在动态直连协商的问题。在无人干预、动态直连的过程中，如何获得相关证书？
+此外，还存在动态直连协商的问题，在无人干预、动态直连的过程中，如何获得相关证书？
 
 在这一章，我们讲解如何通过CertificateProvider机制，获得运行时动态获取、维护签名证书的能力。
 
@@ -261,4 +261,4 @@ discardCertificateProvider(certificateProvider)
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/03-custom/05-certificate-provider.mjs" target="_blank">05-certificate-provider.mjs</a>
+完整示例代码，参见：<a href="../examples/03-custom/06-certificate-provider.mjs" target="_blank">06-certificate-provider.mjs</a>

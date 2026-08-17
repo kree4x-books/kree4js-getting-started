@@ -1,4 +1,4 @@
-# Tracing：单次调用粒度的全栈调用及通信追踪
+# Tracing：以单次调用为控制粒度的全栈调用及通信追踪
 
 > Created By [RV](mailto:rodney.vin@gmail.com), and licensed with Creative Commons "[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)"
 
@@ -225,4 +225,4 @@ output(formatter, writer?, level?): string | any
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/01-basic/04-tracing.mjs" target="_blank">04-tracing.mjs</a>
+完整示例代码，参见：<a href="../examples/01-basic/05-tracing.mjs" target="_blank">05-tracing.mjs</a>

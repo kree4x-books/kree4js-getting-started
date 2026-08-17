@@ -263,4 +263,4 @@ useServiceRegistryProvider(serviceRegistryProvider, asDefault?)
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/03-custom/03-custom-registry.mjs" target="_blank">03-custom-registry.mjs</a>
+完整示例代码，参见：<a href="../examples/03-custom/04-custom-registry.mjs" target="_blank">04-custom-registry.mjs</a>

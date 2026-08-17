@@ -22,21 +22,29 @@ async function main () {
     /**
      * 消费者下单：执行订单（制作、送餐、配送）后，商家回访消费者留下的电话。
      *
+     * 双向返回值：
+     * - 本方法 `return` 的结果，是RPC调用本身的返回值，由消费者（caller）收到
+     * - `await cb()` 直接返回消费者callback函数的返回值（callee可感知并使用）；
+     *   Callback抛错时则抛出该异常
+     *
      * @param {string} food - 菜品名称。
      * @param {Function} cb - 消费者留下的回访电话：err=回访告知的问题，result=回访内容。
+     * @returns {Promise<Object>} RPC调用自身的返回值：订单与回访评价。
      */
     async order (food, cb) {
       if (food === '地沟油炒饭') {
-        // 订单无法执行 → 回调告知失败
-        cb(new Error(`本店不供应：${food}`))
+        // 订单无法执行 → 回调告知失败；await cb()会抛出caller侧cb的异常，此处吞掉
+        await cb(new Error(`本店不供应：${food}`)).catch(() => {})
         return
       }
       // 执行订单：制作、送餐、配送...（此处简化，直接回访）
       logger.info('[nodeA] 订单已完成（制作、送餐、配送），开始回访电话...')
       try {
-        // 回调cb，处理cb结果
-        await cb(null, `${food} 已送达，现在是回访电话`) // 执行回访
-        logger.info('[nodeA] 回访成功：消费者已接通') // 感知：投递成功
+        // 回调cb，处理cb结果：await cb()直接返回消费者callback的返回值（无需解包）
+        const ack = await cb(null, `${food} 已送达，现在是回访电话`) // 执行回访
+        logger.info(`[nodeA] 回访成功：消费者已接通，回访评价=${ack}`) // 感知：投递成功，并使用cb返回值
+        // RPC调用本身有返回值：消费者的下单调用将收到此结果
+        return { order: food, ack }
       } catch (err) {
         logger.warn(`[nodeA] 回访失败: ${err.message}`) // 感知：投递失败
       }
@@ -54,15 +62,27 @@ async function main () {
     // 获取服务存根
     const orderService = nodeB.service('restaurant')
 
-    // 消费者下单：回调在nodeB本地执行
-    const okCall = PromiseUtils.defer()
-    orderService.order('美味的食物', (err, result) => err ? okCall.reject(err) : okCall.resolve(result))
-    const okNotice = await okCall.promise
-    logger.info(`[nodeB] 接到商家回访（成功）："${okNotice}"`)
+    // 消费者下单：回调函数体在nodeB本地执行，其return值是回访评价（回传商家）；
+    // RPC调用本身（order()的return）返回订单与评价，由这里await到
+    const rpcResult = await orderService.order('美味的食物', (err, result) => {
+      if (err) {
+        logger.warn(`[nodeB] 回访接通异常：${err.message}`)
+        return
+      }
+      logger.info(`[nodeB] 接到商家回访："${result}"`)
+      return '满意，五星好评' // 此返回值经临时服务RPC回传，商家（callee）可感知
+    })
+    logger.info(`[nodeB] 订单完成：${JSON.stringify(rpcResult)}（RPC调用自身的返回值）`)
 
     // 点商家没有的菜：订单无法执行
     const failCall = PromiseUtils.defer()
-    orderService.order('地沟油炒饭', (err) => err ? failCall.reject(err) : failCall.resolve(err))
+    orderService.order('地沟油炒饭', (err) => {
+      if (err) {
+        failCall.reject(err)
+      } else {
+        failCall.resolve(err)
+      }
+    })
     try {
       await failCall.promise
     } catch (err) {

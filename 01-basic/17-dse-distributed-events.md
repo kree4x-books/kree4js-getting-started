@@ -209,4 +209,4 @@ newsProxy.emit('news', { headline: '...' })
 
 ### 五. 可运行代码
 
-完整示例代码，参见：<a href="../examples/01-basic/16-dse-distributed-events.mjs" target="_blank">16-dse-distributed-events.mjs</a>
+完整示例代码，参见：<a href="../examples/01-basic/17-dse-distributed-events.mjs" target="_blank">17-dse-distributed-events.mjs</a>
