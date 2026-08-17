@@ -207,8 +207,8 @@ caller.ports.transport.defaultProtocol.usePayloadCodec(new MiniJsonCodec(), true
 caller.attach('tcp://127.0.0.1:8330')
 await caller.start()
 
-// 等待网格传播：让两侧发现彼此的服务
-await new Promise(resolve => setTimeout(resolve, 300))
+// 等待网格发现：等对端节点在本节点可见（whenReady，5s超时）
+await caller.whenReady(callee, 5000)
 
 // 调用：参数对象与返回值对象均经MJSN双向编解码
 const calc = caller.service('calc')

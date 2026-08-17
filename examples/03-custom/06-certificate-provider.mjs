@@ -87,7 +87,8 @@ async function main () {
   nodeB.attach(`tls://127.0.0.1:${PORT}`)
   await nodeB.start()
 
-  await new Promise(resolve => setTimeout(resolve, 300))
+  // 等待网格发现：等对端节点在本节点可见（whenReady，5s超时）
+  await nodeB.whenReady(nodeA, 5000)
 
   const result = await nodeB.service('secure').hello('tls-cert')
   logger.info(`[cert] 跨节点TLS调用成功: ${result}`)

@@ -124,8 +124,8 @@ async function main () {
   await nodeB.start()
   logger.info('node-b 已就绪')
 
-  // 等网格互联完成
-  await new Promise(resolve => setTimeout(resolve, 300))
+  // 等待网格互联完成：等 node-a 在本节点可见（whenReady，5s超时）
+  await nodeB.whenReady(nodeA, 5000)
 
   // caller 从注册表发现 node-a 的服务（而非网格 Grid.FindServices）
   const result = await nodeB.service('greet').hello('mem-registry')

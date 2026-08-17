@@ -289,8 +289,8 @@ async function main () {
   await caller.start()
   logger.info('[node-b] 已启动，已连接到 [node-a]，默认编解码器：MJSN')
 
-  // 等待网格传播：让两侧发现彼此的服务
-  await new Promise(resolve => setTimeout(resolve, 300))
+  // 等待网格发现：等对端节点在本节点可见（whenReady，5s超时）
+  await caller.whenReady(callee, 5000)
 
   // 参数对象与返回值对象均经MJSN双向编解码
   const params = { label: 'MJSN链路', values: [10.5, 20.25, 30.125], scale: 2 }

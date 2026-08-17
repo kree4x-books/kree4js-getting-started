@@ -373,8 +373,8 @@ async function main () {
   await nodeB.start()
   logger.info('node-b，已就绪')
 
-  // 等待网格传播：让两侧发现彼此的服务
-  await new Promise(resolve => setTimeout(resolve, 300))
+  // 等待网格发现：等对端节点在本节点可见（whenReady，5s超时）
+  await nodeB.whenReady(nodeA, 5000)
 
   // node-b通过ipc://直连调用node-a的服务
   const result = await nodeB.service('greeter').hello('ipc-direct')
