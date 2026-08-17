@@ -72,7 +72,10 @@ PayloadCodec的另外一种输出结果，是*frameResult。*
 >
 > JSON.stringify()将payload转换为string后，定量获取指定字节数的字符，使用TextEncoder可以写入连续内存区的指定位置：
 >
-> **TextEncoder.encodeInto**(*source*: string, *destination*: Uint8Array<ArrayBufferLike>)
+> 1. 在连续内存区buffer中，计算destination
+>
+> 2. **TextEncoder.encodeInto**(*source*: string, *destination*: Uint8Array<ArrayBufferLike>):TextEncoderEncodeIntoResult
+> 3. TextEncoderEncodeIntoResult.written指明写入字节数，即frame.pdu的长度
 >
 > 这可以避免TextEncoder.encode()分配内存，然后再copy到目标内存区的开销。
 
