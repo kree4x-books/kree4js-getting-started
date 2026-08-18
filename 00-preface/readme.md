@@ -34,7 +34,7 @@ Kree4JS，是Kree4X的Javascript语言版本实现。
 - 原生服务治理，支持服务发现、服务选择、结果合并的动态治理
 - 多语言支持，Kree4Py、Kree4J……
 
-更详细的内容，推荐去看理论书：[KreeX-RPC:  面向AI Programming的微服务透明RPC调用](https://zhuanlan.zhihu.com/p/2028042363268776710)
+更详细的内容，推荐去看理论书：[KreeX-RPC:  重构面向AI Programming服务调用范式](https://zhuanlan.zhihu.com/p/2028042363268776710)
 
 ### 为什么需要Kree4X？
 
@@ -53,7 +53,7 @@ Kree4JS，是Kree4X的Javascript语言版本实现。
 - [面向AI Programming的软件工程范式思考与实践](https://zhuanlan.zhihu.com/p/2027041298343838694)
 - [面向AI Programming的软件工程范式](https://zhuanlan.zhihu.com/p/2028183632976585299)
 - [AI驱动的“架构工程”-可视化、工程化生成SPEC](https://zhuanlan.zhihu.com/p/2043309578897581930)
-- [KreeX-RPC:  面向AI Programming的微服务透明RPC调用](https://zhuanlan.zhihu.com/p/2028042363268776710)
+- [KreeX-RPC:  重构面向AI Programming服务调用范式](https://zhuanlan.zhihu.com/p/2028042363268776710)
 - [AI时代的前端工程: 问题、目标、方法与方案](https://zhuanlan.zhihu.com/p/2061416478805582965)
 
 ### 为什么叫Kree4X？

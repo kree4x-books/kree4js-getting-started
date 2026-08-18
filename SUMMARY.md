@@ -3,6 +3,8 @@
 > Created By [RV](mailto:rodney.vin@gmail.com), and licensed with Creative Commons "[CC BY-NC-ND 4.0](https://creativecommons.org/licenses/by-nc-nd/4.0/)"
 
 - [前言](00-preface/readme.md)
+- [前言2：面向AI Programming的服务调用](00-preface/02-kreex-rpc.md)
+- [前言3：AI持有契约：Schema In AI，Not Service](00-preface/03-schema-in-ai.md)
 - 基础篇
   - [01. 开始前的准备](01-basic/00-starting.md)
   - [02. 创建Kree4X节点](01-basic/01-create-node.md)
