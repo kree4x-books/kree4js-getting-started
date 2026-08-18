@@ -30,6 +30,7 @@ node examples/01-basic/03-register-invoke-service.mjs
 > 输出：
 >
 >  [Info] [node-b] 调用 [node-a].calc.add(10, 20) = 30
+>
 >  [Info] [node-b] 调用 [node-a].greeter.hello('Kree4JS') = Hello, Kree4JS!
 
 ### 可运行代码
