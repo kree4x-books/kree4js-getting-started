@@ -22,7 +22,23 @@ git clone git@github.com:kree4x-books/kree4js-getting-started.git
 
 ```shell
 npm i
+node examples/01-basic/03-register-invoke-service.mjs
 ```
+
+> 03-register-invoke-service.mjs 演示了完整的创建节点、连接、注册服务、调用服务全过程：
+>
+> 输出：
+>
+>  [Info] [node-b] 调用 [node-a].calc.add(10, 20) = 30
+>  [Info] [node-b] 调用 [node-a].greeter.hello('Kree4JS') = Hello, Kree4JS!
+
+### 可运行代码
+
+npm安装依赖后，examples目录下，是所有的可运行示例。
+
+每个章节，会根据当前章节上下文，重点讲解对应示例代码的片段。
+
+章节正文中的代码，不完整，仅是重点片段，完整代码，从example目录打开、运行。
 
 ### 有问题？
 
