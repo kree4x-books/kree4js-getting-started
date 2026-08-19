@@ -165,6 +165,20 @@ class IpcListenConnection extends ListenConnection {
   async _destroyServer (server) {
     await new Promise(resolve => server.close(resolve))
   }
+
+  /**
+   * 入站配额满时拒绝新接入，在源头销毁被拒连接的底层socket。
+   *
+   * @param {import('node:net').Socket} [socket] - 被拒接入的net.socket。
+   * @returns {void}
+   * @override
+   */
+  _destroyUnderlying (socket) {
+    if (socket == null) {
+      return
+    }
+    socket.destroy()
+  }
 }
 
 // ── 服务端信道：继承IncomingChannel，通过socket回发数据 ────────

@@ -183,6 +183,15 @@ class IpcListenConnection extends ListenConnection {
   async _destroyServer (server) {
     await new Promise(resolve => server.close(resolve))
   }
+
+  // 入站配额满时拒绝新接入：在源头销毁被拒连接的底层对象
+  // 此处与tcp一致，直接销毁net.socket即可
+  _destroyUnderlying (socket) {
+    if (socket == null) {
+      return
+    }
+    socket.destroy()
+  }
 }
 ```
 
@@ -491,6 +500,14 @@ _getIncomingConnectEvents(): string[]
  * @returns {any|undefined} 底层通道。
  */
 _createChannelUnderlying(...args: any[]): any|undefined
+
+/**
+ * 入站配额满时拒绝新接入，在源头销毁被拒连接的底层对象。
+ * 参数为"新接入"事件的原始参数（如 net.socket）。
+ * @param {...any} args - 接入事件携带的参数。
+ * @abstract
+ */
+_destroyUnderlying(...args: any[]): void
 ```
 
 ### 五. 可运行代码
