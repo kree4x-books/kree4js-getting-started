@@ -3,3 +3,10 @@ _book
 node_modules
 .workbuddy
 specs
+
+# private / AI tooling
+.trae
+.opencode
+.cursor
+.env
+.env.*
